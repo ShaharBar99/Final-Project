@@ -1,0 +1,56 @@
+[
+  {
+    "step": "load_raw",
+    "nodes": 19717,
+    "edges": 44338,
+    "label_counts": {
+      "1": 4103,
+      "2": 7875,
+      "3": 7739
+    }
+  },
+  {
+    "step": "remove_duplicate_edges",
+    "removed": 0,
+    "edges_left": 44338
+  },
+  {
+    "step": "remove_self_loops",
+    "removed": 3,
+    "edges_left": 44335,
+    "examples": [
+      "10751750",
+      "9221759",
+      "1586783"
+    ]
+  },
+  {
+    "step": "resolve_mutual_citations",
+    "removed": 11,
+    "edges_left": 44324,
+    "examples": [
+      "7860729->7860730",
+      "19956098->19956106",
+      "11032783->11032784",
+      "9042931->9042932",
+      "19956107->19956108"
+    ]
+  },
+  {
+    "step": "drop_edges_with_unknown_papers",
+    "removed": 0,
+    "edges_left": 44324
+  },
+  {
+    "step": "remove_isolated_nodes",
+    "removed": 0,
+    "nodes_left": 19717
+  },
+  {
+    "step": "final_checks",
+    "nodes": 19717,
+    "edges": 44324,
+    "weakly_connected_components": 1,
+    "directed_cycles_groups": 0
+  }
+]
