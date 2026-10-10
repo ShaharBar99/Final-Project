@@ -17,3 +17,8 @@ Newest at the bottom.
 - **Result of checks:** 1 connected component, no cycles (the graph is a DAG), no isolated papers.
 - **Code:** `src/data.py`, tests in `tests/test_cleaning.py` (5 passing), notebook `notebooks/01_clean_data.ipynb`.
 - Details of every action: `docs/cleaning_report.md`. Assumptions: `docs/decisions.md`.
+
+## Step 2 - Decomposition (2026-10-10)
+- **Goal:** split the Phase A model into small blocks with clear inputs/outputs before writing the heavy code.
+- **Output:** `docs/decomposition.md` (7 blocks A-G, experiment grid, 7 precise rules for ambiguous points such as closeness on a directed graph and the frozen scaler) and the matching empty skeleton in `src/` (`features.py`, `scaling.py`, `model.py`, `ranking.py`, `perturb.py`, `stability.py`, `core.py`). The functions are placeholders that raise `NotImplementedError("step N")` and are filled in by the step named in the message.
+- No data was touched in this step.
