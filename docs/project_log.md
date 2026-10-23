@@ -112,3 +112,10 @@ Newest at the bottom.
 - **Validation (clicked through in a browser):** numbers match the demo notebook for the same settings; removal 10 % shows 39,892 citations and 943 isolated papers, the same as step 6; an unknown ID shows a warning.
 - **Bugs found while testing and fixed:** the results charts sorted the damage levels as text ("10 %", "20 %", "5 %"), which drew a fake V shape - replaced by a matplotlib chart with numeric levels; the default method was the with-PageRank forest instead of the without-PageRank one; metric labels were cut off; Streamlit's deprecated `use_container_width` replaced with `width`.
 - `.claude/launch.json` has a run configuration for the app; `streamlit` and `psutil` added to `requirements.txt`.
+
+## Step 10 - Testing and performance (2026-10-23)
+- **Goal:** complete the Phase A testing plan - integration, end-to-end, reproducibility, core-threshold, app and performance tests.
+- **New tests** (`tests/test_pipeline.py`, 10 tests, 60 in total): the whole pipeline on a synthetic citation graph; same seed -> identical output; core threshold; real data reproduces the saved base ranking and the experiment; the Streamlit app runs. Real-data tests are marked `slow` (`pytest -m "not slow"` skips them).
+- **Bug found:** same seed did not give bit-identical forest scores (~1e-16) because prediction ran on several threads. Fixed by predicting on one thread. Rankings were never affected (D13); saved results match the new code to 5e-16.
+- **Also fixed:** the app used matplotlib's GUI backend, which warns when drawing from a server thread; it now uses the non-GUI "Agg" backend.
+- **Performance** (`scripts/profile_pipeline.py`): ~0.6 s per damaged graph (2 s for add_random), peak ~350 MB, memory grows only by the stored scores (no leak), runtime grows roughly with the number of edges. Details: `docs/testing_and_performance.md`, raw numbers: `results/profiling/`.

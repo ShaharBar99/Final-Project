@@ -12,7 +12,10 @@ Tabs:
 import sys
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.use("Agg")  # no GUI backend: the app draws in a server thread
+import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd
 import streamlit as st
 

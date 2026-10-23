@@ -27,9 +27,21 @@ def train_model(x, y, seed=config.SEED):
 
 
 def predict_scores(model, x):
-    """Score the nodes of any graph with the already trained model (no retraining)."""
+    """Score the nodes of any graph with the already trained model (no retraining).
+
+    Prediction runs on one thread. With several threads the 200 tree outputs
+    are added up in a different order each time, and the result changes in
+    the 16th digit - enough to break "same seed, identical output" (found by
+    tests/test_pipeline.py). One thread costs ~0.1 s more per graph.
+    """
     columns = list(model.feature_names_in_)
-    return pd.Series(model.predict(x[columns]), index=x.index)
+    n_jobs = model.n_jobs
+    model.n_jobs = 1
+    try:
+        prediction = model.predict(x[columns])
+    finally:
+        model.n_jobs = n_jobs
+    return pd.Series(prediction, index=x.index)
 
 
 def holdout_check(x, y, seed=config.SEED):

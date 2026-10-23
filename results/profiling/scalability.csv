@@ -1,0 +1,13 @@
+share_of_papers,papers,edges,kind,seconds_per_graph
+0.25,4929,2887,remove,0.08
+0.25,4929,2887,add_random,0.08
+0.25,4929,2887,add_dag,0.08
+0.5,9858,11160,remove,0.25
+0.5,9858,11160,add_random,0.21
+0.5,9858,11160,add_dag,0.21
+0.75,14787,24405,remove,0.36
+0.75,14787,24405,add_random,0.58
+0.75,14787,24405,add_dag,0.49
+1.0,19717,44324,remove,0.61
+1.0,19717,44324,add_random,2.17
+1.0,19717,44324,add_dag,0.7

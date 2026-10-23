@@ -1,0 +1,14 @@
+stage,seconds,memory_after_mb,memory_change_mb
+load cleaned graph,0.129,244.5,21.8
+compute 5 features,0.205,255.3,10.8
+fit scaler,0.024,255.3,1.1
+apply scaler,0.002,255.7,0.4
+train both forests,0.817,327.2,71.5
+predict both forests,0.428,327.2,0.0
+topological order,0.062,328.4,1.2
+perturb remove 10 %,0.062,337.9,9.5
+score graph after remove 10 %,0.588,347.7,9.8
+perturb add_random 10 %,0.056,347.5,3.0
+score graph after add_random 10 %,2.034,350.3,4.8
+perturb add_dag 10 %,0.056,350.4,0.1
+score graph after add_dag 10 %,0.603,350.1,3.2

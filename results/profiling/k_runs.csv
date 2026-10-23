@@ -1,0 +1,4 @@
+K,seconds,score_array_mb,memory_growth_mb,peak_above_start_mb
+1,0.7,1.1,11.9,11.9
+10,7.5,11.0,15.4,15.4
+30,23.0,33.1,35.9,35.9
