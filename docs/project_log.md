@@ -43,3 +43,14 @@ Newest at the bottom.
 - **Consequence for the experiment:** the "with PageRank" model will behave almost exactly like PageRank in the stability tests. The "without PageRank" model is the real test of the Phase A idea. We keep both and report both.
 - **Not tuned on purpose:** we want a reasonable model, not the best fit; the question is about stability.
 - **Code:** `src/model.py`, 4 new tests (18 passing), notebook `notebooks/03_model.ipynb`. Output: `data/processed/model_report.json`. Models themselves are rebuilt locally and not committed (D8).
+
+## Step 5 - Base ranking (2026-10-23)
+- **Goal:** the reference ranking of every method on the original graph (7 methods: 2 forests + 5 single centralities). Perturbed rankings are compared against this in step 8.
+- **Tie rule (D9):** rank 1 = most important, tied papers share the average rank.
+- **Findings:**
+  - Ties are everywhere. Share of papers that sit in a tie: k-core 100 % (only 10 distinct values), degree 99.9 % (82 values), betweenness 94 %, closeness 88 %, forest without PageRank 79 %, PageRank 66 %, forest with PageRank 65 %. Coarse methods cannot separate most papers at all, so their rank correlations will be low-resolution.
+  - The forest with PageRank has the same ranking as PageRank (Spearman 1.00, identical top 100) - confirms step 4.
+  - The forest without PageRank agrees most with closeness (0.88) and PageRank (0.81), and less with degree (0.39). Top-100 overlap with PageRank: 65 papers.
+  - Betweenness is the odd one out: almost no overlap in the top 100 with anything (3 with PageRank).
+- **Code:** `src/ranking.py`, `load_or_train` added to `src/model.py`, 4 new tests (22 passing), notebook `notebooks/04_base_ranking.ipynb`.
+- **Output:** `data/processed/base_scores.csv`, `base_ranking.csv`.

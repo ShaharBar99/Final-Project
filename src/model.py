@@ -45,3 +45,15 @@ def holdout_check(x, y, seed=config.SEED):
         "r2": r2_score(y_test, pred),
         "spearman": pred.corr(y_test, method="spearman"),
     }
+
+
+def load_or_train(name, x, y, models_dir):
+    """Load the saved forest `name`, or rebuild it (fixed seed) if the file is missing."""
+    import joblib
+    path = models_dir / f"rf_{name}.joblib"
+    if path.exists():
+        return joblib.load(path)
+    forest = train_model(x, y)
+    models_dir.mkdir(parents=True, exist_ok=True)
+    joblib.dump(forest, path)
+    return forest
