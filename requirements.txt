@@ -7,3 +7,4 @@ pyarrow
 matplotlib
 pytest
 jupyter
+igraph

@@ -5,9 +5,17 @@
 | D1 | Use PubMed-Diabetes instead of Cora | Dataset provided for the project (Phase A mentioned Cora as preliminary) | 2026-10-10 |
 | D2 | Run the model both with and without PageRank as an input feature | PageRank is also the target; with it as a feature the forest can just copy it | 2026-10-10 |
 | D3 | Temporal consistency checked structurally (no cycles), not by year | No publication dates in the data | 2026-10-10 |
-| D4 | Betweenness will be approximated (sampled sources, fixed seed) | See below | 2026-10-10 |
+| D4 | ~~Betweenness approximated by sampling~~ **Replaced 2026-10-23: exact betweenness, computed with igraph** | See below | 2026-10-10 / 2026-10-23 |
 | D5 | Mutual citations: keep the edge from the higher PubMed ID to the lower | PubMed IDs grow over time, so higher ID ~ newer paper. This is an assumption; 11 edges out of 44k, so the effect is tiny | 2026-10-10 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
 
 ## D4 in more detail
-Exact betweenness needs a shortest-path search from every node (about 19.7k searches) and we need it for many perturbed graphs. The approximation runs the search from only k randomly chosen source nodes (e.g. k = 500) and scales the result up. **All 19,717 nodes still get a score** - only the sources are sampled, not the papers we rank or train on. The same k and seed are used for every graph so the numbers stay comparable.
+**Original idea (2026-10-10):** approximate betweenness from sampled source nodes, because we assumed exact betweenness would be too slow on 19.7k nodes.
+
+**What we measured in step 3 (2026-10-23):**
+- Exact betweenness with networkx: 161 s per graph. With igraph: under 1 s.
+- Only 1,807 of the 19,717 papers have betweenness above zero (the graph is a DAG and most papers are sources or sinks).
+- The sampled version is a poor copy of the exact one: Spearman with exact = 0.22 (k=100), 0.55 (k=500), 0.63 (k=1000), 0.70 (k=2000), and it finds only 535 of the 1,807 non-zero papers at k=500.
+- Sampling noise would also show up as "instability" and could be mistaken for the effect we are trying to measure.
+
+**Decision:** compute exact betweenness on every graph with igraph. It is cheap, exact and removes one source of noise. igraph is listed as an option in Phase A. The igraph result is checked against networkx in `tests/test_features.py`.

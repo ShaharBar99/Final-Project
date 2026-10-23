@@ -44,7 +44,7 @@ in `src/`, has a clear input and output, and can be tested alone.
 ## Points that need a precise rule (so we do not decide them later by accident)
 
 1. **Closeness on a directed graph that is not strongly connected.** Most papers cannot reach most others. Rule: use the networkx default (Wasserman-Faust correction), which for directed graphs uses *incoming* distances, i.e. how close the rest of the network is to the paper (how fast influence reaches it from the citing side). Nodes that reach nobody get 0 (also what the Phase A test plan asks for).
-2. **Betweenness**: sampled sources, k = 500, fixed seed (D4).
+2. **Betweenness**: exact, via igraph, divided by (n-1)(n-2) (D4, changed after timing it in step 3).
 3. **k-core on a directed graph**: computed on the undirected version, self-loops removed.
 4. **Degree**: total degree / (N-1) as in Appendix B.
 5. **Scaler**: fitted on G0 only. On perturbed graphs values may fall outside [0,1] and are NOT clipped (that is the point of the frozen scaler).

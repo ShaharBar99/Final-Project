@@ -42,4 +42,4 @@ docs/                user_guide.md, maintainer_guide.md, poster/
 1. **Dataset**: Phase A says Cora; the provided data is PubMed-Diabetes. Confirm PubMed is final.
 2. **PageRank is both a feature and the target** (Phase A design). The RF can then just copy that column, which makes "ML beats PageRank on stability" trivial/misleading. Options: (a) keep as in paper and discuss it, (b) drop PageRank from the features, (c) run both and compare. Suggested: (c).
 3. **Temporal validation**: the dataset has no publication years, so "validation of temporal consistency" can only be done structurally (cycles / reciprocal edges). OK?
-4. **Betweenness cost**: exact is heavy on 19.7k nodes x many perturbed graphs. Suggest approximate (k-sampled, fixed seed) betweenness; same approximation for all graphs.
+4. **Betweenness cost**: first assumed to need approximation; later measured and replaced by exact igraph betweenness (see decisions.md, D4).
