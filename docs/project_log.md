@@ -33,3 +33,13 @@ Newest at the bottom.
   - PageRank has many near-identical values, so rankings will contain many ties (handled with average ranks in step 5).
 - **Output:** `data/processed/features_raw.csv`, `features_scaled.csv`, `scaler.joblib`.
 - **Code:** `src/features.py`, `src/scaling.py`, 9 new tests (14 passing in total), notebook `notebooks/02_features.ipynb`.
+
+## Step 4 - Random Forest (2026-10-23)
+- **Goal:** one model that turns the five centralities into an importance score; target = PageRank on the original graph (Phase A). Trained twice: with and without PageRank as an input (D2).
+- **Results (80/20 hold-out, on papers the forest never saw):**
+  - With PageRank as input: R^2 = 0.999, Spearman 1.000. The forest puts 99.8 % of its importance on the PageRank column, i.e. it just copies it.
+  - Without PageRank: R^2 = 0.75, Spearman 0.80. Importance is split mainly between closeness (0.47) and degree (0.44).
+  - For comparison, the best single centrality (closeness) follows PageRank with Spearman 0.73; degree 0.29, k-core 0.37, betweenness 0.19. So the forest combines the features into something closer to PageRank than any single one.
+- **Consequence for the experiment:** the "with PageRank" model will behave almost exactly like PageRank in the stability tests. The "without PageRank" model is the real test of the Phase A idea. We keep both and report both.
+- **Not tuned on purpose:** we want a reasonable model, not the best fit; the question is about stability.
+- **Code:** `src/model.py`, 4 new tests (18 passing), notebook `notebooks/03_model.ipynb`. Output: `data/processed/model_report.json`. Models themselves are rebuilt locally and not committed (D8).

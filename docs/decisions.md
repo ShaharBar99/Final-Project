@@ -7,6 +7,8 @@
 | D3 | Temporal consistency checked structurally (no cycles), not by year | No publication dates in the data | 2026-10-10 |
 | D4 | ~~Betweenness approximated by sampling~~ **Replaced 2026-10-23: exact betweenness, computed with igraph** | See below | 2026-10-10 / 2026-10-23 |
 | D5 | Mutual citations: keep the edge from the higher PubMed ID to the lower | PubMed IDs grow over time, so higher ID ~ newer paper. This is an assumption; 11 edges out of 44k, so the effect is tiny | 2026-10-10 |
+| D7 | Forest settings: 200 trees, `min_samples_leaf=5`, seed 42, other options default | Leaf size 5 keeps the saved model at 18-33 MB instead of several hundred and avoids memorising single papers; no tuning was done, since the goal is stability, not the best possible fit | 2026-10-23 |
+| D8 | Model files are not committed to GitHub; they are rebuilt from the notebook (fixed seed) | 20-30 MB each; cheap to rebuild | 2026-10-23 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
 
 ## D4 in more detail

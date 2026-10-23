@@ -1,0 +1,39 @@
+{
+  "holdout": {
+    "with_pagerank": {
+      "r2": 0.9993570916953133,
+      "spearman": 0.9999938497183242
+    },
+    "without_pagerank": {
+      "r2": 0.7474944661091567,
+      "spearman": 0.7965247426900967
+    }
+  },
+  "single_centrality_spearman_vs_pagerank": {
+    "degree": 0.2881335305955736,
+    "betweenness": 0.18824231220979423,
+    "closeness": 0.7300756263468388,
+    "kcore": 0.37005541082993687
+  },
+  "feature_importance": {
+    "with_pagerank": {
+      "degree": 0.002,
+      "betweenness": 0.0,
+      "closeness": 0.0,
+      "pagerank": 0.998,
+      "kcore": 0.0
+    },
+    "without_pagerank": {
+      "degree": 0.436,
+      "betweenness": 0.045,
+      "closeness": 0.466,
+      "kcore": 0.053
+    }
+  },
+  "forest_settings": {
+    "n_estimators": 200,
+    "min_samples_leaf": 5,
+    "n_jobs": -1
+  },
+  "seed": 42
+}
