@@ -15,6 +15,7 @@
 | D12 | Scores are kept in natural units for the CV: raw values for single centralities, PageRank units for the forests (prediction passed back through the PageRank column of the scaler). The forests' *inputs* still use the frozen scaler | CV = std / mean does not change with scale but does change with a shift, and Min-Max shifts (subtracts the minimum): a paper at the minimum would get mean ~ 0 and a meaningless CV, and on perturbed graphs scaled values can be negative. Rankings are unaffected | 2026-10-23 |
 | D13 | Scores are rounded to 12 significant digits before ranking | Floating-point noise (~1e-16) split true ties at random - found when the step 7 pipeline did not exactly reproduce the step 5 rankings. Smallest real gap between PageRank values is ~1e-8, so 12 digits is safe | 2026-10-23 |
 | D14 | K = 30 runs per setting, 3 kinds x 3 levels = 270 perturbed graphs | Enough for stable means (ranking instability, std/mean of Spearman, is at most 0.017 in every setting); full run takes ~6 minutes | 2026-10-23 |
+| D15 | Besides Spearman / Kendall over all papers, report Spearman over each method's own top 10 % and top-100 / top-1000 retention | Ties inflate the full correlation: 90 % of papers have betweenness 0 in every removal run, stay tied, and make betweenness look like the most stable method (Spearman 0.988). The top-10 % view measures the papers that actually matter | 2026-10-23 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
 
 ## D4 in more detail

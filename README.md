@@ -18,4 +18,4 @@ pytest
 Then open the notebooks in order (also works in Google Colab: the first cell clones the repo).
 
 ## Status
-See `docs/project_log.md`. Done: step 1 (cleaning), step 2 (decomposition), step 3 (features + frozen scaler), step 4 (Random Forest), step 5 (base ranking), step 6 (perturbation engine), step 7 (scores on 270 perturbed graphs).
+See `docs/project_log.md`. Done: step 1 (cleaning), step 2 (decomposition), step 3 (features + frozen scaler), step 4 (Random Forest), step 5 (base ranking), step 6 (perturbation engine), step 7 (scores on 270 perturbed graphs), step 8 (stability metrics).
