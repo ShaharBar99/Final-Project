@@ -16,6 +16,7 @@
 | D13 | Scores are rounded to 12 significant digits before ranking | Floating-point noise (~1e-16) split true ties at random - found when the step 7 pipeline did not exactly reproduce the step 5 rankings. Smallest real gap between PageRank values is ~1e-8, so 12 digits is safe | 2026-10-23 |
 | D14 | K = 30 runs per setting, 3 kinds x 3 levels = 270 perturbed graphs | Enough for stable means (ranking instability, std/mean of Spearman, is at most 0.017 in every setting); full run takes ~6 minutes | 2026-10-23 |
 | D15 | Besides Spearman / Kendall over all papers, report Spearman over each method's own top 10 % and top-100 / top-1000 retention | Ties inflate the full correlation: 90 % of papers have betweenness 0 in every removal run, stay tied, and make betweenness look like the most stable method (Spearman 0.988). The top-10 % view measures the papers that actually matter | 2026-10-23 |
+| D16 | Network core reported with two rules: Phase A as written (stable = CV <= 10th percentile of all papers) and adjusted (stable = CV <= median CV of the top-10 % papers). Important = top 10 % of the method's base ranking | The Phase A rule is degenerate on this data: under removal its threshold is 0 and it selects only bottom-ranked papers whose score never changes, so the core is empty. The adjusted rule keeps the Phase A idea (important AND stable) but judges stability where it matters. The Phase A result is kept as a finding | 2026-10-23 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
 
 ## D4 in more detail

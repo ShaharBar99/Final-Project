@@ -89,3 +89,12 @@ Newest at the bottom.
   5. **Instability profiles:** the forest's CV pattern follows PageRank's (Spearman 0.45-0.69) more than any input feature's, except closeness under add_random 20 % (0.94 - the saturation case). It is almost unrelated to degree, k-core and betweenness instability (-0.4 to 0.26).
 - **Output:** `results/tables/` (ranking_stability.csv, cv_summary.csv, instability_profiles.csv, per_run_correlations.csv), `results/spearman_vs_level.png`.
 - **Code:** `src/stability.py`, `src/analysis.py`, 7 new tests, notebook `notebooks/07_stability.ipynb`.
+
+## Step 9 - Network core and hypotheses (2026-10-23)
+- **Goal:** answer the 5 research questions and the 3 hypotheses of Phase A.
+- **Problem found in the Phase A core rule:** "stable = CV <= 10th percentile of all papers" gives an empty core under removal for the forest, PageRank and closeness - the threshold is 0 and the only papers below it are at the bottom of the ranking (mean base rank ~18,700). Kept as a finding; added an adjusted rule that judges stability among the top-10 % papers (D16).
+- **New measures:** for each important paper, the share of runs in which it stays in the top 10 %; "fragile important" = papers that drop out in more than half of the runs; Jaccard overlap of cores between settings.
+- **Validation:** unit tests for both core rules and for stay-in-top; checked that the adjusted core really picks robust papers (core papers stay in the top more often than the other important papers in every setting); figures checked visually (legend moved off the bars); every number in results_summary.md checked against the tables.
+- **Verdicts:** H1 partly supported (better than PageRank under addition, not under removal, never better than degree / k-core); H2 not supported as stated (a forest that leans on one feature collapses with it); H3 supported with the adjusted rule. Full answers: `docs/results_summary.md`.
+- **Code:** `src/core.py`, `core_analysis` / `core_consistency` in `src/analysis.py`, 4 tests (50 passing), notebook `notebooks/08_core_and_hypotheses.ipynb`.
+- **Output:** `results/tables/core_summary.csv`, `results/importance_vs_cv.png`, `results/top10_retention.png`.
