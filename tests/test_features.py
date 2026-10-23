@@ -70,3 +70,12 @@ def test_scaler_is_frozen_and_not_clipped():
     perturbed = pd.DataFrame({"x": [0.0, 4.0]})
     out = scaling.apply_scaler(scaler, perturbed)
     assert out["x"].tolist() == [0.0, 2.0]  # 4 on a 0..2 scale -> 2, not clipped to 1
+
+
+def test_closeness_agrees_with_networkx_on_random_graph_with_cycles():
+    g = nx.gnp_random_graph(80, 0.04, seed=5, directed=True)
+    g = nx.relabel_nodes(g, str)
+    g.add_node("lonely")
+    ours = features.compute_features(g)["closeness"]
+    theirs = pd.Series(nx.closeness_centrality(g))
+    assert np.allclose(ours.sort_index(), theirs.sort_index())

@@ -54,3 +54,15 @@ Newest at the bottom.
   - Betweenness is the odd one out: almost no overlap in the top 100 with anything (3 with PageRank).
 - **Code:** `src/ranking.py`, `load_or_train` added to `src/model.py`, 4 new tests (22 passing), notebook `notebooks/04_base_ranking.ipynb`.
 - **Output:** `data/processed/base_scores.csv`, `base_ranking.csv`.
+
+## Step 6 - Perturbation engine (2026-10-23)
+- **Goal:** make damaged copies of the graph - edge removal and edge addition at 5 / 10 / 20 % - with the node set fixed and every run reproducible on its own.
+- **Two addition variants (D10):** `add_random` exactly as in Phase A, and `add_dag` which only adds "newer -> older" edges. Before building `add_dag` we checked the PubMed-ID idea: only 89.6 % of real citations go from higher to lower ID, so we used a topological order of the cleaned graph instead (agrees with 100 % of citations, guarantees no cycles).
+- **Validation on the real graph (one run per setting, notebook 05):**
+  - node set unchanged in all 9 settings; exact edge counts (-/+ 2,216 / 4,432 / 8,865);
+  - `remove` deletes only existing edges; it leaves 469 / 943 / 1,981 papers with no edges at all (they stay in the graph);
+  - both addition kinds keep all original edges; no self-loops or duplicate edges;
+  - `add_dag` stays acyclic; `add_random` creates cycle groups of 328 / 901 / 2,498 papers;
+  - the same (seed, kind, level, run) always gives the same graph.
+- **Problem found and fixed:** on `add_random` graphs networkx closeness took ~20 s per graph. Closeness moved to igraph with the same formula (D11); a new test checks it equals networkx on a graph with cycles, and the original-graph features are identical to step 3. Feature time now: 0.5 s (remove), 1 s (add_dag), 5 s (add_random - more papers reach each other, so there is simply more work).
+- **Code:** `src/perturb.py`, `src/features.py` (closeness), 11 new tests (33 passing), notebook `notebooks/05_perturbation.ipynb`.
