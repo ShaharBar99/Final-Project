@@ -105,3 +105,10 @@ Newest at the bottom.
 - **Validation:** the demo's scores for (add_dag, 10 %, seed 42) are identical to run 0 of the same setting in the full experiment.
 - **Example found by the demo:** paper 15004560 falls from rank 67 to 1,612 (forest) after a single new outgoing citation - its betweenness jumps from 0 to ~0.1, and the forest had learned "cited a lot, betweenness 0" as a sign of an important classic paper. Explained in the notebook.
 - **Code:** `src/demo.py` (shared with the app), `notebooks/09_demo.ipynb`.
+
+## Interactive app (2026-10-23)
+- **Goal:** an interactive version of the demo for the presentation (task 8).
+- **What it is:** a Streamlit app, `app/app.py`, run with `streamlit run app/app.py`. Sidebar: kind of damage, level (1-30 %), seed, method. Tabs: *Damage the graph* (graph change, stability of every method, top-20 before / after, rank scatter), *Look up a paper* (ranks in all methods and features before / after for any PubMed ID), *Experiment results* (the 270-run results, charts and the full write-up), *How it works*.
+- **Validation (clicked through in a browser):** numbers match the demo notebook for the same settings; removal 10 % shows 39,892 citations and 943 isolated papers, the same as step 6; an unknown ID shows a warning.
+- **Bugs found while testing and fixed:** the results charts sorted the damage levels as text ("10 %", "20 %", "5 %"), which drew a fake V shape - replaced by a matplotlib chart with numeric levels; the default method was the with-PageRank forest instead of the without-PageRank one; metric labels were cut off; Streamlit's deprecated `use_container_width` replaced with `width`.
+- `.claude/launch.json` has a run configuration for the app; `streamlit` and `psutil` added to `requirements.txt`.
