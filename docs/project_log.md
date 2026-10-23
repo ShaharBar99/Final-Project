@@ -124,3 +124,10 @@ Newest at the bottom.
 - **Goal:** tasks 5 and 6 - `docs/user_guide.md` (install, quick start, notebooks, app, how to read the results, settings, troubleshooting) and `docs/maintainer_guide.md` (architecture, data formats, rules the code relies on, how to add a measure / damage kind / model / dataset, tests, environment, pitfalls).
 - **Validation:** cloned the repository fresh from GitHub into an empty folder - all 60 tests pass, the demo notebook runs, and the automatically rebuilt forests give bit-identical scores to the local ones. All timings quoted in the guides were measured (notebooks 6-25 s each, tests ~20 s).
 - **Added:** `docs/review_before_sharing.md` - the changes to the Phase A plan, the findings and the details the team and the advisor should review before the work is shared.
+
+## Poster (2026-10-23)
+- **Goal:** task 7 - an A0 portrait poster (84.1 x 118.9 cm) in English.
+- **Files:** `poster/poster.pptx` (editable, native PowerPoint charts), `poster/poster.pdf` (for printing, exported by PowerPoint), `poster/poster_preview.png`, and `poster/build_poster.py`, which rebuilds the poster from `results/tables/` (`python poster/build_poster.py`), so the numbers always come from the last run.
+- **Content:** key finding with three numbers, question / data / damage types, the pipeline in six steps, Spearman vs damage level for each kind of damage, top-10 % retention, hypothesis verdicts, lessons from the data, conclusion, QR code to the repository.
+- **Bugs found while checking the render:** PowerPoint refused to open the first version - shape coordinates computed by division were written as decimals (`x="914400.0"`), which PowerPoint does not accept; all coordinates are now rounded to whole numbers. The first charts were **mislabelled**: the axis started at 0.35 and the labels were rounded to one decimal, so every line looked ~0.05 higher than it was; the axis now starts at 0.3. Also fixed: a stat number wrapping onto its label, the PageRank line hidden behind closeness, numbers split from their % sign, uneven legend spacing.
+- **Checked:** every plotted value against `results/tables/`.
