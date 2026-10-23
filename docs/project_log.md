@@ -119,3 +119,8 @@ Newest at the bottom.
 - **Bug found:** same seed did not give bit-identical forest scores (~1e-16) because prediction ran on several threads. Fixed by predicting on one thread. Rankings were never affected (D13); saved results match the new code to 5e-16.
 - **Also fixed:** the app used matplotlib's GUI backend, which warns when drawing from a server thread; it now uses the non-GUI "Agg" backend.
 - **Performance** (`scripts/profile_pipeline.py`): ~0.6 s per damaged graph (2 s for add_random), peak ~350 MB, memory grows only by the stored scores (no leak), runtime grows roughly with the number of edges. Details: `docs/testing_and_performance.md`, raw numbers: `results/profiling/`.
+
+## User guide and maintainer guide (2026-10-23)
+- **Goal:** tasks 5 and 6 - `docs/user_guide.md` (install, quick start, notebooks, app, how to read the results, settings, troubleshooting) and `docs/maintainer_guide.md` (architecture, data formats, rules the code relies on, how to add a measure / damage kind / model / dataset, tests, environment, pitfalls).
+- **Validation:** cloned the repository fresh from GitHub into an empty folder - all 60 tests pass, the demo notebook runs, and the automatically rebuilt forests give bit-identical scores to the local ones. All timings quoted in the guides were measured (notebooks 6-25 s each, tests ~20 s).
+- **Added:** `docs/review_before_sharing.md` - the changes to the Phase A plan, the findings and the details the team and the advisor should review before the work is shared.

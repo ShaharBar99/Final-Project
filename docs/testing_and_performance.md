@@ -1,7 +1,7 @@
 # Testing and performance (step 10)
 
 How the Phase A testing plan (Section 7.2) is covered. Run everything with `pytest`
-(about 1.5 minutes), or only the fast tests with `pytest -m "not slow"` (about 10 seconds).
+(about 20 seconds), or only the fast tests with `pytest -m "not slow"` (about 6 seconds).
 
 ## Tests
 

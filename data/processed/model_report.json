@@ -12,7 +12,7 @@
   "single_centrality_spearman_vs_pagerank": {
     "degree": 0.2881335305955736,
     "betweenness": 0.18824231220979423,
-    "closeness": 0.7300756263468388,
+    "closeness": 0.730075645759403,
     "kcore": 0.37005541082993687
   },
   "feature_importance": {
