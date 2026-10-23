@@ -98,3 +98,10 @@ Newest at the bottom.
 - **Verdicts:** H1 partly supported (better than PageRank under addition, not under removal, never better than degree / k-core); H2 not supported as stated (a forest that leans on one feature collapses with it); H3 supported with the adjusted rule. Full answers: `docs/results_summary.md`.
 - **Code:** `src/core.py`, `core_analysis` / `core_consistency` in `src/analysis.py`, 4 tests (50 passing), notebook `notebooks/08_core_and_hypotheses.ipynb`.
 - **Output:** `results/tables/core_summary.csv`, `results/importance_vs_cv.png`, `results/top10_retention.png`.
+
+## Demo notebook (2026-10-23)
+- **Goal:** show the whole system on one damaged graph in about a second, for the presentation (task 8).
+- **What it does:** choose kind / level / seed -> damage the graph -> recompute features, frozen scaler, trained forests -> Spearman / Kendall / top-100 kept for all 7 methods, before / after table of the top-20 papers, rank-before vs rank-after plot, and a zoom on the top-100 paper that fell the most, with its features before / after.
+- **Validation:** the demo's scores for (add_dag, 10 %, seed 42) are identical to run 0 of the same setting in the full experiment.
+- **Example found by the demo:** paper 15004560 falls from rank 67 to 1,612 (forest) after a single new outgoing citation - its betweenness jumps from 0 to ~0.1, and the forest had learned "cited a lot, betweenness 0" as a sign of an important classic paper. Explained in the notebook.
+- **Code:** `src/demo.py` (shared with the app), `notebooks/09_demo.ipynb`.
