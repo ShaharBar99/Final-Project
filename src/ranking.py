@@ -1,7 +1,27 @@
 """Block D - turning scores into rankings."""
+import numpy as np
 import pandas as pd
 
 from . import model
+
+SIGNIFICANT_DIGITS = 12
+
+
+def round_scores(scores, digits=SIGNIFICANT_DIGITS):
+    """Round to `digits` significant digits.
+
+    Scores that should be equal sometimes differ in the 16th digit (floating
+    point noise from PageRank iterations or from scaling). Without rounding,
+    such ties are broken at random and look like rank changes that are not
+    really there. On our data the smallest real gap between two PageRank
+    values is ~1e-8 (relative), the noise is ~1e-16, so 12 digits separates
+    them safely.
+    """
+    values = scores.to_numpy(dtype=float)
+    with np.errstate(divide="ignore"):
+        magnitude = np.where(values == 0, 0, np.floor(np.log10(np.abs(values))))
+    rounded = np.round(values / 10.0 ** magnitude, digits - 1) * 10.0 ** magnitude
+    return pd.Series(rounded, index=scores.index)
 
 
 def to_ranking(scores):
@@ -11,7 +31,7 @@ def to_ranking(scores):
     if 500 papers have the same score, none of them is "better" than the
     others, so they all get the same middle rank.
     """
-    return scores.rank(ascending=False, method="average")
+    return round_scores(scores).rank(ascending=False, method="average")
 
 
 def base_scores(x_scaled, models):
@@ -31,4 +51,4 @@ def base_scores(x_scaled, models):
 
 def tie_share(scores):
     """Fraction of papers that share their score with at least one other paper."""
-    return scores.duplicated(keep=False).mean()
+    return round_scores(scores).duplicated(keep=False).mean()

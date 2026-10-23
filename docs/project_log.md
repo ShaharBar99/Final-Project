@@ -66,3 +66,14 @@ Newest at the bottom.
   - the same (seed, kind, level, run) always gives the same graph.
 - **Problem found and fixed:** on `add_random` graphs networkx closeness took ~20 s per graph. Closeness moved to igraph with the same formula (D11); a new test checks it equals networkx on a graph with cycles, and the original-graph features are identical to step 3. Feature time now: 0.5 s (remove), 1 s (add_dag), 5 s (add_random - more papers reach each other, so there is simply more work).
 - **Code:** `src/perturb.py`, `src/features.py` (closeness), 11 new tests (33 passing), notebook `notebooks/05_perturbation.ipynb`.
+
+## Step 7 - Scoring the perturbed graphs (2026-10-23)
+- **Goal:** for every setting (remove / add_random / add_dag x 5 / 10 / 20 %) and K = 30 runs: perturb -> recompute features -> frozen scaler -> both forests without retraining; keep all 7 methods' scores.
+- **Validation before the full run:**
+  - Scoring the original graph through the new code must reproduce the step 5 rankings exactly. **It did not** at first: 4 methods had small differences (up to 135 rank places for the PageRank forest). Cause: values that should be tied differed by ~1e-16 (floating point), and scaling split those ties differently. Fixed by rounding to 12 significant digits before ranking (D13, new test); now all 7 rankings match exactly. Step 5 was re-run; its tie counts moved by at most 4 distinct values.
+  - The "out of range" check flagged values on the original graph itself - again floating point (max scaled to 1.0000000000000002). Added a 1e-9 tolerance.
+  - Two of the new tests failed on the first try: one exposed the bug above, the other was too strict for a 119-paper toy graph and was replaced by an exact check of the unit conversion.
+- **Score units (D12):** natural units for the CV; see decisions.md.
+- **Run:** 270 graphs in ~6 minutes (0.5 s per graph, 5.8 s for add_random at 20 % because of cycles). Raw scores in `results/runs/` (not on GitHub, ~150 MB, rebuilt by notebook 06).
+- **Extrapolation check (out-of-range inputs):** after edge *addition*, 42-60 % of papers get a scaled PageRank below the original minimum (adding edges lowers the smallest PageRank values), and with add_random 20 % also 60 % of closeness values exceed the original maximum. After *removal*, up to 10 % of degree / k-core values drop below the minimum. The forest cannot extrapolate - it gives all these papers the edge-of-range answer. This becomes important in step 8.
+- **Code:** `src/experiment.py`, rounding in `src/ranking.py`, 5 new tests, notebook `notebooks/06_run_experiment.ipynb`.

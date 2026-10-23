@@ -1,0 +1,10 @@
+remove_05: 30 runs in 15 s
+remove_10: 30 runs in 14 s
+remove_20: 30 runs in 14 s
+add_random_05: 30 runs in 26 s
+add_random_10: 30 runs in 71 s
+add_random_20: 30 runs in 174 s
+add_dag_05: 30 runs in 15 s
+add_dag_10: 30 runs in 17 s
+add_dag_20: 30 runs in 19 s
+DONE
