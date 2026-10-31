@@ -131,3 +131,11 @@ Newest at the bottom.
 - **Content:** key finding with three numbers, question / data / damage types, the pipeline in six steps, Spearman vs damage level for each kind of damage, top-10 % retention, hypothesis verdicts, lessons from the data, conclusion, QR code to the repository.
 - **Bugs found while checking the render:** PowerPoint refused to open the first version - shape coordinates computed by division were written as decimals (`x="914400.0"`), which PowerPoint does not accept; all coordinates are now rounded to whole numbers. The first charts were **mislabelled**: the axis started at 0.35 and the labels were rounded to one decimal, so every line looked ~0.05 higher than it was; the axis now starts at 0.3. Also fixed: a stat number wrapping onto its label, the PageRank line hidden behind closeness, numbers split from their % sign, uneven legend spacing.
 - **Checked:** every plotted value against `results/tables/`.
+
+## Study document, steps 1-4 (2026-10-31)
+- **Goal:** one document that explains steps 1-4 in detail so the team can learn the process and prepare the advisor meeting: `docs/study_document_steps_1-4.docx` (editable) and `.pdf` (7 pages).
+- **Content:** cleaning, the ambiguous rules fixed in step 2, features and scaler, the Random Forest and its surprises, a formula-by-formula comparison with Phase A (F1-F13), problems found, and the decisions (to approve with the advisor / decided by us / still open).
+- **Found while writing it (new):**
+  - Our forest does **not** use "feature randomness": scikit-learn's default for regression forests is `max_features = 1.0` (all features at every split). Phase A's hypothesis H2 argues from feature randomness, so the H2 verdict tested a forest without that mechanism. Hold-out accuracy is unchanged by the setting (R^2 0.747 vs 0.746). **Open decision** - recommended: retrain with `max_features = 0.5` and report both.
+  - Closeness direction: Phase A's definition (distance *from* a node) gives closeness 0 for 15,840 papers (80 %) and Spearman -0.27 with PageRank; ours (incoming) gives 0 for 2,047 and +0.73. Forest accuracy is the same either way (hold-out R^2 0.747 vs 0.691).
+  - Kendall tau-a (Phase A formula) reports 0.166 for betweenness after 10 % removal where tau-b gives 0.968, because 83 % of pairs are tied.
