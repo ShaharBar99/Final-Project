@@ -139,3 +139,6 @@ Newest at the bottom.
   - Our forest does **not** use "feature randomness": scikit-learn's default for regression forests is `max_features = 1.0` (all features at every split). Phase A's hypothesis H2 argues from feature randomness, so the H2 verdict tested a forest without that mechanism. Hold-out accuracy is unchanged by the setting (R^2 0.747 vs 0.746). **Open decision** - recommended: retrain with `max_features = 0.5` and report both.
   - Closeness direction: Phase A's definition (distance *from* a node) gives closeness 0 for 15,840 papers (80 %) and Spearman -0.27 with PageRank; ours (incoming) gives 0 for 2,047 and +0.73. Forest accuracy is the same either way (hold-out R^2 0.747 vs 0.691).
   - Kendall tau-a (Phase A formula) reports 0.166 for betweenness after 10 % removal where tau-b gives 0.968, because 83 % of pairs are tied.
+
+## Comparison of steps 1-2 with Phase A (2026-11-01)
+Wrote `docs/phaseA_vs_steps_1-2.docx/.pdf` (3 pages): what step 1 (cleaning) and step 2 (decomposition) changed or added relative to the Phase A document, and a numbered list of changes still to make (report wording, adjacency-matrix requirement without code, closeness direction, advisor approvals). No code changed.
