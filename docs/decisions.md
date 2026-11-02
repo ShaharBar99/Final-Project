@@ -18,6 +18,7 @@
 | D15 | Besides Spearman / Kendall over all papers, report Spearman over each method's own top 10 % and top-100 / top-1000 retention | Ties inflate the full correlation: 90 % of papers have betweenness 0 in every removal run, stay tied, and make betweenness look like the most stable method (Spearman 0.988). The top-10 % view measures the papers that actually matter | 2026-10-23 |
 | D16 | Network core reported with two rules: Phase A as written (stable = CV <= 10th percentile of all papers) and adjusted (stable = CV <= median CV of the top-10 % papers). Important = top 10 % of the method's base ranking | The Phase A rule is degenerate on this data: under removal its threshold is 0 and it selects only bottom-ranked papers whose score never changes, so the core is empty. The adjusted rule keeps the Phase A idea (important AND stable) but judges stability where it matters. The Phase A result is kept as a finding | 2026-10-23 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
+| D17 | Closeness = Wasserman-Faust with **incoming** distances: CL(v) = [r / sum d(u,v)] * [r / (N-1)], r = number of papers that reach v; 0 if r = 0. Replaces the Phase A formula (N-1) / sum d(v,y) (outgoing distances) | Phase A's formula gives 0 to all 19,717 papers on a citation DAG (nobody reaches everybody). Outgoing distances with the correction still give 0 to 80 % and correlate -0.27 with PageRank; incoming gives 0 to 10 % and +0.73. Equal to Phase A's formula whenever that is defined. **Needs advisor approval.** Details: D17 in more detail | 2026-11-02 |
 
 ## D4 in more detail
 **Original idea (2026-10-10):** approximate betweenness from sampled source nodes, because we assumed exact betweenness would be too slow on 19.7k nodes.
@@ -29,3 +30,20 @@
 - Sampling noise would also show up as "instability" and could be mistaken for the effect we are trying to measure.
 
 **Decision:** compute exact betweenness on every graph with igraph. It is cheap, exact and removes one source of noise. igraph is listed as an option in Phase A. The igraph result is checked against networkx in `tests/test_features.py`.
+
+## D17 in more detail
+**Phase A (Appendix B):** CL(v) = (N - 1) / sum over y != v of d(v, y), with d(v, y) the shortest path from v to y (outgoing).
+**Problem:** on a citation DAG no paper reaches all others, so every sum is infinite and CL = 0 for all 19,717 papers (measured).
+**Used:** CL(v) = [ r(v) / sum over u in R(v) of d(u, v) ] * [ r(v) / (N - 1) ], R(v) = papers with a path to v, r = |R(v)|, CL = 0 if r = 0.
+When r = N - 1 this equals the Phase A formula (apart from direction). Same as networkx `closeness_centrality` on the original graph (computed with igraph, see D11).
+
+| Version | CL = 0 | distinct values | Spearman with PageRank |
+|---|---|---|---|
+| Phase A as written (out) | 19,717 | 1 | undefined |
+| out, no correction | 15,840 | 1,908 | -0.27 |
+| out + Wasserman-Faust | 15,840 | 2,141 | -0.27 |
+| in, no correction | 2,047 | 2,481 | +0.02 |
+| **in + Wasserman-Faust (used)** | 2,047 | 2,814 | +0.73 |
+
+**Why incoming:** it follows the direction in which a paper's influence travels (cited -> citing), the meaning Phase A gives to closeness ("how rapidly a node's influence reaches across the network"). **Risk:** the Phase A wording is "from a node to all other nodes".
+**Alternative:** `mode="out"` in `src/features.py::_closeness` and rerun from notebook 02. Full write-up with an example: `docs/phaseA_vs_steps_1-2_v2.pdf`.

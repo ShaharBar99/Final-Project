@@ -142,3 +142,6 @@ Newest at the bottom.
 
 ## Comparison of steps 1-2 with Phase A (2026-11-01)
 Wrote `docs/phaseA_vs_steps_1-2.docx/.pdf` (3 pages): what step 1 (cleaning) and step 2 (decomposition) changed or added relative to the Phase A document, and a numbered list of changes still to make (report wording, adjacency-matrix requirement without code, closeness direction, advisor approvals). No code changed.
+
+## Step 2 review against Phase A (2026-11-02)
+Went through every step 2 difference from Phase A; only two are kept as changes (closeness formula, second forest). Betweenness, k-core, edge direction, the hold-out check and the second edge-addition method are not changes (or are optional extras). Closeness is written up in detail (Phase A formula, ours, example, measurements, decision record) in `docs/phaseA_vs_steps_1-2_v2.docx/.pdf` and as D17 in `decisions.md`; `decomposition.md` corrected. The first version of the comparison file was open in Word, so the new one has the suffix _v2.
