@@ -31,25 +31,34 @@ The data is the PubMed-Diabetes dataset: 19,717 papers about diabetes and 44,324
 
 ## 2. Installation
 
-You need **Python 3.10 or newer** (the project was developed and tested with Python 3.14 on Windows 11) and **git**.
+You need **64-bit Python 3.12.x** and **git**. Python 3.12 is the supported and
+verified local version; upgrading to Python 3.14 is not required.
 
 ### On your own computer
 
-```
+In Windows Git Bash:
+
+```bash
 git clone https://github.com/ShaharBar99/Final-Project.git
 cd Final-Project
+python --version                    # verify Python 3.12.x
 python -m venv .venv
-.venv\Scripts\activate            (on macOS / Linux: source .venv/bin/activate)
-pip install -r requirements.txt
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
 
 Check that everything works:
 
-```
-pytest
+```bash
+python -m pytest -m "not slow" -q
+python -m pytest -q
 ```
 
-You should see 60 tests passing in about 20 seconds.
+The first command runs the fast suite. Run the complete suite only after it
+passes. On a fresh clone, complete real-data tests may build ignored model
+artifacts because trained forests are not stored in Git. Test time depends on
+the machine and security scanning of compiled Python extensions.
 
 ### On Google Colab
 
@@ -175,8 +184,9 @@ After changing the levels or K, delete the folder `results/runs/` (or call `run_
 | `FileNotFoundError: ... results/runs/...` in notebook 07 or 08 | The raw results are not on GitHub. Run notebook 06 first (~6 min). |
 | Notebook 06 seems stuck at `add_random_20` | This setting is the slowest (about 3 minutes). Settings that are already done are skipped if you restart. |
 | `pip install` fails on `igraph` | Upgrade pip (`python -m pip install --upgrade pip`) and try again; igraph ships ready-made packages for Windows, macOS and Linux. |
+| `DLL load failed` and Windows Code Integrity reports a blocked `.pyd` file | Confirm Python 3.12.x and reinstall the exact versions from `requirements.txt`. Do not disable or bypass Windows security policy. If a pinned wheel is still blocked, provide the Code Integrity event to the system administrator for approval. |
 | The app shows an old version after a code change | Press `R` in the browser tab, or stop the app and start it again. |
-| `pytest` is slow | `pytest -m "not slow"` skips the tests that use the full dataset and the app (about 6 seconds). |
+| `pytest` is slow | `python -m pytest -m "not slow" -q` skips the tests that use the full dataset and the app. |
 
 ---
 

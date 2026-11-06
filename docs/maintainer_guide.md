@@ -156,7 +156,9 @@ Notebook 06 needs `--ExecutePreprocessor.timeout=1800` because it runs for about
 
 ## 7. Environment
 
-Tested with Python 3.14.7 on Windows 11 and these versions:
+The supported local environment is 64-bit Python 3.12.x on Windows 11. Python
+3.14 is not required. Install the exact direct dependencies from
+`requirements.txt`; the versions below were verified together on Python 3.12.4:
 
 | Package | Version | Used for |
 |---|---|---|
@@ -165,13 +167,35 @@ Tested with Python 3.14.7 on Windows 11 and these versions:
 | pandas | 3.0.6 | tables |
 | numpy | 2.5.3 | arrays |
 | scikit-learn | 1.9.1 | Min-Max scaler, Random Forest |
-| scipy | 1.18.1 | Spearman, Kendall |
+| scipy | 1.16.3 | Spearman, Kendall |
 | matplotlib | 3.11.2 | figures |
-| streamlit | 1.66.1 | the app |
-| pytest | 9.1.1 | tests |
+| streamlit | 1.67.0 | the app |
+| pytest | 9.2.0 | tests |
 | psutil | 7.2.2 | memory profiling |
 
-`requirements.txt` does not pin versions. If a future version changes results (for example a different PageRank tolerance in networkx), install the versions above.
+`requirements.txt` pins every direct dependency. Use
+`python -m pip install -r requirements.txt` rather than installing unversioned
+packages. This matters for
+numerical reproducibility and for Windows Code Integrity: pandas 3.1.1 and SciPy
+1.18.1 extensions were blocked on the verified machine, while the pinned pandas
+3.0.6 and SciPy 1.16.3 wheels load normally without changing security policy.
+
+For Windows Git Bash, create and verify the environment with:
+
+```bash
+python --version                    # must report Python 3.12.x
+python -m venv .venv
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pip check
+python -m pytest -m "not slow" -q
+python -m pytest -q
+```
+
+The fast command should pass before the complete suite is attempted. The three
+slow tests load the real data and app; when ignored model files are absent,
+their current setup rebuilds those models with the fixed seed.
 
 The saved forests (`.joblib`) only load with the same scikit-learn version. They are not in git anyway; delete `data/processed/models/` and they are rebuilt.
 

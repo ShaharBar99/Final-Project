@@ -9,12 +9,22 @@ Question: does a Random Forest that combines several centrality measures give no
 - `docs/` paper (Phase A), plan, project log, decisions, cleaning report
 
 ## Quick start
+
+Python 3.12.x (64-bit) is the supported local version. In Windows Git Bash:
+
 ```
+python --version
 python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-pytest
+source .venv/Scripts/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m pytest -m "not slow" -q
+python -m pytest -q
 ```
+
+The first test command verifies the code without the real-data/app tests. Run the
+complete command after it passes; on a fresh clone, the real-data tests may build
+the ignored model artifacts because they are not stored in Git.
 Then open the notebooks in order (also works in Google Colab: the first cell clones the repo).
 
 ## Status
