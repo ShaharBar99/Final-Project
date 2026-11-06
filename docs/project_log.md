@@ -145,3 +145,6 @@ Wrote `docs/phaseA_vs_steps_1-2.docx/.pdf` (3 pages): what step 1 (cleaning) and
 
 ## Step 2 review against Phase A (2026-11-02)
 Went through every step 2 difference from Phase A; only two are kept as changes (closeness formula, second forest). Betweenness, k-core, edge direction, the hold-out check and the second edge-addition method are not changes (or are optional extras). Closeness is written up in detail (Phase A formula, ours, example, measurements, decision record) in `docs/phaseA_vs_steps_1-2_v2.docx/.pdf` and as D17 in `decisions.md`; `decomposition.md` corrected. The first version of the comparison file was open in Word, so the new one has the suffix _v2.
+
+## Notebook 1 degree plot (2026-11-06)
+Replaced the log-log degree plot in `01_clean_data` with grouped bars (share of papers per degree group, in and out) plus a bar chart of the three paper roles, a reading guide (A -> B = A cites B, A newer) and a short findings text. The old plot dropped degree 0, which hides that 10 % of papers are never cited and 80 % cite nothing. No data changed.
