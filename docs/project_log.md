@@ -148,3 +148,6 @@ Went through every step 2 difference from Phase A; only two are kept as changes 
 
 ## Notebook 1 degree plot (2026-11-06)
 Replaced the log-log degree plot in `01_clean_data` with grouped bars (share of papers per degree group, in and out) plus a bar chart of the three paper roles, a reading guide (A -> B = A cites B, A newer) and a short findings text. The old plot dropped degree 0, which hides that 10 % of papers are never cited and 80 % cite nothing. No data changed.
+
+## Notebook 2 plots and notes (2026-11-06)
+Improved `02_features`: feature guide table with the closeness change flagged (D17), distribution panels that state the share of zeros (log x-axis, zeros not drawn), Spearman heat map, findings text. Figures saved as `results/features_distribution.png` and `results/features_spearman.png` and shown again in markdown cells. No data or code in `src/` changed.
