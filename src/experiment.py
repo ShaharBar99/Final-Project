@@ -16,7 +16,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from . import config, features, model, perturb, scaling
+from . import cache_metadata, config, features, model, perturb, scaling
 
 VARIANTS = {
     "with_pagerank": model.FEATURES_WITH_PAGERANK,
@@ -75,31 +75,82 @@ def setting_name(kind, level):
     return f"{kind}_{int(round(level * 100)):02d}"
 
 
-def run_all(g, scaler, forests, k, kinds=perturb.KINDS, levels=LEVELS, redo=False):
-    """Run every setting and save each one to results/runs/. Already saved settings are skipped."""
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+def _setting_spec(g, scaler, forests, kind, level, k, seed):
+    return {
+        "artifact_type": "perturbation_scores",
+        "graph_fingerprint": cache_metadata.graph_fingerprint(g),
+        "feature_names": list(features.FEATURE_NAMES),
+        "feature_definitions": features.FEATURE_DEFINITIONS,
+        "model_fingerprints": {name: model.model_fingerprint(forest)
+                               for name, forest in sorted(forests.items())},
+        "scaler_fingerprint": cache_metadata.scaler_fingerprint(scaler),
+        "scaler": cache_metadata.scaler_spec(scaler),
+        "perturbation": {"kind": kind, "fraction": level, "repetitions": k, "seed": seed},
+        "methods": list(METHODS),
+        "dependencies": cache_metadata.dependency_versions(),
+    }
+
+
+def _base_spec(g, scaler, forests):
+    spec = _setting_spec(g, scaler, forests, "base", 0.0, 0, config.SEED)
+    spec["artifact_type"] = "base_scores"
+    spec.pop("perturbation")
+    return spec
+
+
+def run_all(g, scaler, forests, k, kinds=perturb.KINDS, levels=LEVELS, redo=False,
+            seed=config.SEED, runs_dir=None):
+    """Run every setting, reusing only caches with matching validated metadata."""
+    runs_dir = RUNS_DIR if runs_dir is None else runs_dir
+    runs_dir.mkdir(parents=True, exist_ok=True)
     nodes = list(g.nodes)
     order = perturb.time_order(g)
 
-    base, _ = score_graph(g, scaler, forests)
-    base.loc[nodes].to_csv(RUNS_DIR / "base_scores.csv", index_label="paper_id")
+    base_path = runs_dir / "base_scores.csv"
+    base_spec = _base_spec(g, scaler, forests)
+    if base_path.exists() and not redo:
+        try:
+            cache_metadata.validate_metadata(base_path, base_spec)
+        except cache_metadata.CacheValidationError as error:
+            raise cache_metadata.CacheValidationError(
+                f"base-score cache {base_path} is invalid; it was preserved. "
+                "Rerun with redo=True only after confirming regeneration."
+            ) from error
+    else:
+        base, _ = score_graph(g, scaler, forests)
+        base.loc[nodes].to_csv(base_path, index_label="paper_id")
+        cache_metadata.write_metadata(base_path, base_spec)
 
     for kind in kinds:
         for level in levels:
             name = setting_name(kind, level)
-            path = RUNS_DIR / f"{name}.npz"
+            path = runs_dir / f"{name}.npz"
+            spec = _setting_spec(g, scaler, forests, kind, level, k, seed)
             if path.exists() and not redo:
-                print(f"{name}: already done, skipped")
-                continue
+                try:
+                    cache_metadata.validate_metadata(path, spec)
+                    print(f"{name}: validated cache, skipped")
+                    continue
+                except cache_metadata.CacheValidationError as error:
+                    raise cache_metadata.CacheValidationError(
+                        f"experiment cache {path} is invalid; it was preserved. "
+                        "Rerun with redo=True only after confirming regeneration."
+                    ) from error
             start = time.time()
-            scores, info = run_setting(g, kind, level, k, scaler, forests, order)
+            scores, info = run_setting(g, kind, level, k, scaler, forests, order, seed=seed)
             np.savez_compressed(path, scores=scores, nodes=np.array(nodes), methods=np.array(METHODS))
-            with open(RUNS_DIR / f"{name}_info.json", "w") as f:
+            info_path = runs_dir / f"{name}_info.json"
+            with open(info_path, "w") as f:
                 json.dump(info, f, indent=1)
+            cache_metadata.write_metadata(path, spec,
+                                          {info_path.name: cache_metadata.file_sha256(info_path)})
             print(f"{name}: {k} runs in {time.time() - start:.0f} s", flush=True)
 
 
-def load_setting(kind, level):
-    """Saved scores of one setting as (array runs x papers x methods, nodes, methods)."""
-    data = np.load(RUNS_DIR / f"{setting_name(kind, level)}.npz")
+def load_setting(kind, level, runs_dir=None):
+    """Load an integrity-validated setting as (scores, nodes, methods)."""
+    runs_dir = RUNS_DIR if runs_dir is None else runs_dir
+    path = runs_dir / f"{setting_name(kind, level)}.npz"
+    cache_metadata.validate_metadata(path)
+    data = np.load(path)
     return data["scores"], list(data["nodes"]), list(data["methods"])

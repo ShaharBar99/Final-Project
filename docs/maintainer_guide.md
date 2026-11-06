@@ -63,6 +63,7 @@ data/raw  --(data.py)-->  cleaned graph G0
 | `results/runs/<kind>_<level>.npz` | `scores` array (K runs x papers x 7 methods), `nodes`, `methods` | notebook 06 | **no** - ~150 MB, ~6 min to rebuild |
 | `results/runs/<kind>_<level>_info.json` | per run: edges, seconds, share of inputs out of range | notebook 06 | no |
 | `results/runs/base_scores.csv` | base scores in natural units, same paper order as the npz files | notebook 06 | no |
+| `*.meta.json` beside a cached model/result | input fingerprints, configuration, dependency versions and artifact SHA-256 | cache validation code | follows its artifact |
 | `results/tables/*.csv` | final result tables | notebooks 07-08 | yes |
 | `results/profiling/*.csv` | performance numbers | `scripts/profile_pipeline.py` | yes |
 
@@ -94,7 +95,7 @@ Break one of these and the results quietly become wrong - the tests catch most, 
 2. Add it to the forest inputs in `src/model.py` (`FEATURES_WITH_PAGERANK`, `FEATURES_WITHOUT_PAGERANK`) if the forest should use it.
 3. Add a test in `tests/test_features.py` - if possible compare with a reference implementation (as betweenness and closeness are compared with networkx).
 4. Add a label in `src/demo.py` - `METHOD_LABELS`.
-5. Re-run notebooks 02-08 and delete `data/processed/models/` first (the forests' inputs changed).
+5. Re-run notebooks 02-08. Existing model metadata will reject the changed feature definition; explicitly rebuild the invalid model cache only after confirming the change.
 
 The new measure automatically becomes a baseline method, because `experiment.METHODS` is built from `FEATURE_NAMES`.
 
@@ -122,7 +123,7 @@ If the new measure is slow, check it on an `add_random` graph: random edges crea
 
 ### Change the experiment size
 
-`LEVELS` in `src/experiment.py`, `k` in notebook 06. Delete `results/runs/` or call `run_all(..., redo=True)`; otherwise old settings are skipped.
+Change `LEVELS` in `src/experiment.py` or `k` in notebook 06. The metadata check rejects results made with the old setting and preserves them. After confirming that regeneration is intended, call `run_all(..., redo=True)`.
 
 ---
 
@@ -197,7 +198,7 @@ The fast command should pass before the complete suite is attempted. The three
 slow tests load the real data and app; when ignored model files are absent,
 their current setup rebuilds those models with the fixed seed.
 
-The saved forests (`.joblib`) only load with the same scikit-learn version. They are not in git anyway; delete `data/processed/models/` and they are rebuilt.
+Saved forests and experiment arrays have adjacent `.meta.json` files. Reuse requires matching data/graph, feature definitions, model and scaler fingerprints, parameters, seed, and dependency versions, plus a matching artifact checksum. Legacy, missing, or corrupt metadata is rejected without deleting the artifact. Use `rebuild_invalid=True` for a deliberately replaced model cache or `redo=True` for deliberately regenerated experiment results.
 
 ---
 

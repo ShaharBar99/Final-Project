@@ -35,7 +35,8 @@ def load_pipeline():
     scaler = joblib.load(config.PROCESSED_DIR / "scaler.joblib")
     x = pd.read_csv(config.PROCESSED_DIR / "features_scaled.csv", index_col="paper_id",
                     dtype={"paper_id": str})
-    forests = {name: model.load_or_train(name, x[cols], x[model.TARGET], config.PROCESSED_DIR / "models")
+    forests = {name: model.load_or_train(name, x[cols], x[model.TARGET], config.PROCESSED_DIR / "models",
+                                         scaler=scaler)
                for name, cols in experiment.VARIANTS.items()}
     base, _ = experiment.score_graph(g, scaler, forests)
     return g, nodes, scaler, forests, base

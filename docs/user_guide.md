@@ -172,7 +172,7 @@ Most users will not need this. Settings and where to change them:
 | Number of damaged networks per setting (K) | 30 | `notebooks/06_run_experiment.ipynb` - `run_all(..., k=30)` |
 | Forest settings | 200 trees, min. 5 papers per leaf | `src/model.py` - `FOREST_SETTINGS` |
 
-After changing the levels or K, delete the folder `results/runs/` (or call `run_all(..., redo=True)`) and run notebooks 06-08 again. After changing the forest settings or the seed, also delete `data/processed/models/` and run from notebook 03.
+After changing levels, K, forest settings, the seed, features, or input data, the cache metadata rejects incompatible saved artifacts and leaves them untouched. Confirm that regeneration is intended before using `run_all(..., redo=True)` for experiment results or `load_or_train(..., rebuild_invalid=True)` for a model.
 
 ---
 

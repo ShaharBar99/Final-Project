@@ -5,6 +5,16 @@ import pandas as pd
 
 FEATURE_NAMES = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
 
+# Human-readable definitions are part of cache metadata. Change the matching
+# definition whenever a feature's mathematical convention changes.
+FEATURE_DEFINITIONS = {
+    "degree": "networkx directed total-degree centrality: (in-degree + out-degree) / (n - 1)",
+    "betweenness": "exact directed igraph betweenness divided by (n - 1)(n - 2)",
+    "closeness": "incoming-distance Wasserman-Faust closeness computed with igraph",
+    "pagerank": "networkx PageRank on the directed graph with damping alpha=0.85",
+    "kcore": "networkx core number of the undirected simple projection without self-loops",
+}
+
 DAMPING = 0.85  # the usual PageRank value, same as in Appendix B of Phase A
 
 
