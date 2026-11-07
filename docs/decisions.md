@@ -3,7 +3,7 @@
 | # | Decision | Reason | Date |
 |---|---|---|---|
 | D1 | Use PubMed-Diabetes instead of Cora | Dataset provided for the project (Phase A mentioned Cora as preliminary) | 2026-10-10 |
-| D2 | Run the model both with and without PageRank as an input feature | PageRank is also the target; with it as a feature the forest can just copy it | 2026-10-10 |
+| D2 | Run both models: without PageRank as the **primary model**, and with PageRank as a **direct-leakage control** | PageRank remains the proxy target. Giving that target as an input lets the control copy it, so its predictive performance is not primary scientific evidence | 2026-10-10; roles clarified 2026-11-07 |
 | D3 | Temporal consistency checked structurally (no cycles), not by year | No publication dates in the data | 2026-10-10 |
 | D4 | ~~Betweenness approximated by sampling~~ **Replaced 2026-10-23: exact betweenness, computed with igraph** | See below | 2026-10-10 / 2026-10-23 |
 | D5 | Mutual citations: keep the edge from the higher PubMed ID to the lower | PubMed IDs grow over time, so higher ID ~ newer paper. This is an assumption; 11 edges out of 44k, so the effect is tiny. *Checked in step 6: 89.6 % of the real citations go from higher to lower ID, so the proxy is right most of the time but not always.* | 2026-10-10 |

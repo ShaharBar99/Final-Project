@@ -21,7 +21,7 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src import config, demo, experiment, features, ranking, scaling  # noqa: E402
+from src import config, demo, experiment, features, model, ranking, scaling  # noqa: E402
 
 st.set_page_config(page_title="Node importance under damage", layout="wide")
 
@@ -59,7 +59,7 @@ level = st.sidebar.slider("How much? (% of the edges)", 1, 30, 10, step=1) / 100
 seed = st.sidebar.number_input("Random seed", min_value=0, value=config.SEED, step=1)
 method = st.sidebar.selectbox("Method to look at in detail", experiment.METHODS,
                               format_func=demo.METHOD_LABELS.get,
-                              index=experiment.METHODS.index("rf_without_pagerank"))
+                              index=experiment.METHODS.index(model.PRIMARY_MODEL))
 st.sidebar.caption("Same settings + same seed = same damaged graph. "
                    "The forests are never retrained on the damaged graph.")
 
@@ -155,7 +155,7 @@ with tab_results:
     fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharey=True)
     for ax, k in zip(axes, ["remove", "add_dag", "add_random"]):
         t = ranking_table[ranking_table.kind == k].pivot(index="level", columns="method", values=metric)
-        for m in experiment.METHODS:
+        for m in experiment.SCIENTIFIC_REPORT_ORDER:
             style = "-o" if m.startswith("rf_") else "--."
             ax.plot(t.index * 100, t[m], style, label=demo.METHOD_LABELS[m])
         ax.set_title(k); ax.set_xlabel("% of edges changed"); ax.set_xticks([5, 10, 20])
@@ -164,7 +164,8 @@ with tab_results:
     fig.legend(handles, labels, loc="lower center", ncol=4, fontsize=9, bbox_to_anchor=(0.5, -0.12))
     plt.tight_layout()
     st.pyplot(fig, width="stretch")
-    st.caption("Solid lines = the two Random Forests, dashed = single centralities.")
+    st.caption("Solid lines = the primary forest and leakage control; dashed = five centrality baselines. "
+               "Predictive agreement with PageRank and robustness to damage are different questions.")
 
     core_path = tables / "core_summary.csv"
     if core_path.exists():
@@ -185,21 +186,23 @@ with tab_results:
 
 with tab_about:
     st.markdown("""
-**Question.** Does a Random Forest that combines several centrality measures rank papers more
-stably than any single measure when the citation data is incomplete or noisy?
+**Question.** Does a Random Forest trained as a PageRank proxy rank papers more stably than
+PageRank and the other centrality baselines when the citation data is incomplete or noisy?
 
 **Pipeline** (every step is a module in `src/`):
 1. **Clean graph** - 19,717 papers, 44,324 citations, no self-loops, no cycles.
 2. **Features** - degree, betweenness, closeness, PageRank, k-core for every paper.
 3. **Frozen scaler** - Min-Max fitted once on the original graph and never refitted.
-4. **Random Forest** - learns PageRank from the other features (one version also gets PageRank itself).
+4. **Random Forest** - the primary model predicts PageRank from the other four measures. A leakage
+   control also receives PageRank itself and therefore mostly copies its target.
 5. **Damage** - remove or add a share of the citations; the papers stay the same.
 6. **Re-score** - recompute the features on the damaged graph, use the same scaler and the same trained forest.
 7. **Compare** - Spearman / Kendall between rankings, how much of the top survives, per-paper variation.
 
-**Main finding.** The forest is more stable than PageRank - the measure it imitates - when citations are
-*added*, especially at the top of the ranking, and a little less stable when citations are *removed*.
-Simple local measures (degree, k-core) are the most stable of all. Details in the *Experiment results* tab.
+**Main finding.** The primary forest is more stable than PageRank when citations are *added*, especially
+at the top, but a little less stable when citations are *removed*. It is not the most robust method:
+simple local measures (degree, k-core) are more stable overall. Agreement with its PageRank target does
+not establish an independent or true notion of importance. Details are in the *Experiment results* tab.
 
 Braude College of Engineering - Final project, Phase B. Niran Czuckermann and Shahar Bar.
 Advisor: Dr. Dvora Toledano-Kitai.

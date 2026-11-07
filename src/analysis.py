@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from . import config, core, experiment, perturb, ranking, stability
+from . import config, core, experiment, model, perturb, ranking, stability
 
 TABLES_DIR = config.RESULTS_DIR / "tables"
 
@@ -13,7 +13,7 @@ def load_base_scores():
                        dtype={"paper_id": str})
 
 
-def evaluate_all(kinds=perturb.KINDS, levels=experiment.LEVELS, reference="rf_without_pagerank"):
+def evaluate_all(kinds=perturb.KINDS, levels=experiment.LEVELS, reference=model.PRIMARY_MODEL):
     """Evaluate every (kind, level). Returns (per_run, cv_table, profiles, cvs).
 
     per_run   one row per (kind, level, method, run): spearman, kendall, top-k kept

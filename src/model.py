@@ -14,6 +14,23 @@ TARGET = "pagerank"
 FEATURES_WITH_PAGERANK = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
 FEATURES_WITHOUT_PAGERANK = ["degree", "betweenness", "closeness", "kcore"]
 
+# Scientific roles.  These identifiers are also the persisted score-column
+# names, so keep them stable for compatibility with existing experiment files.
+PRIMARY_MODEL = "rf_without_pagerank"
+CONTROL_MODEL = "rf_with_pagerank"
+MODEL_ROLES = {
+    PRIMARY_MODEL: {
+        "role": "primary",
+        "features": FEATURES_WITHOUT_PAGERANK,
+        "target": TARGET,
+    },
+    CONTROL_MODEL: {
+        "role": "leakage_control",
+        "features": FEATURES_WITH_PAGERANK,
+        "target": TARGET,
+    },
+}
+
 FOREST_SETTINGS = dict(n_estimators=200, min_samples_leaf=5, n_jobs=-1)
 
 

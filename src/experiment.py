@@ -19,10 +19,16 @@ import pandas as pd
 from . import cache_metadata, config, features, model, perturb, scaling
 
 VARIANTS = {
-    "with_pagerank": model.FEATURES_WITH_PAGERANK,
-    "without_pagerank": model.FEATURES_WITHOUT_PAGERANK,
+    "with_pagerank": model.MODEL_ROLES[model.CONTROL_MODEL]["features"],
+    "without_pagerank": model.MODEL_ROLES[model.PRIMARY_MODEL]["features"],
 }
-METHODS = [f"rf_{name}" for name in VARIANTS] + features.FEATURE_NAMES
+MODEL_METHODS = [f"rf_{name}" for name in VARIANTS]
+BASELINE_METHODS = list(features.FEATURE_NAMES)
+# Persisted array-column order: do not reorder without migrating cached runs.
+METHODS = MODEL_METHODS + BASELINE_METHODS
+# Presentation/evaluation order puts the scientifically primary model first and
+# the direct-leakage model last, without changing any stored scores.
+SCIENTIFIC_REPORT_ORDER = [model.PRIMARY_MODEL, *BASELINE_METHODS, model.CONTROL_MODEL]
 LEVELS = [0.05, 0.10, 0.20]
 RUNS_DIR = config.RESULTS_DIR / "runs"
 

@@ -37,7 +37,7 @@ data/raw  --(data.py)-->  cleaned graph G0
 | `data.py` | `clean_dataset()`, `save_dataset()`, `load_clean_graph()` | each cleaning step appends what it did to a `log` list |
 | `features.py` | `compute_features(g)` | rows follow `g.nodes`; betweenness and closeness via igraph |
 | `scaling.py` | `fit_scaler()`, `apply_scaler()` | no clipping, on purpose |
-| `model.py` | `train_model()`, `predict_scores()`, `holdout_check()`, `load_or_train()` | prediction is single-threaded, on purpose |
+| `model.py` | `train_model()`, `predict_scores()`, `holdout_check()`, `load_or_train()`, `MODEL_ROLES` | no-PageRank = primary; with-PageRank = leakage control; prediction is single-threaded |
 | `ranking.py` | `to_ranking()`, `round_scores()`, `base_scores()`, `tie_share()` | **always** rank through `to_ranking()` |
 | `perturb.py` | `perturb()`, `run_rng()`, `time_order()`, `KINDS` | never modifies the input graph |
 | `experiment.py` | `score_graph()`, `run_setting()`, `run_all()`, `load_setting()`, `METHODS`, `LEVELS` | scores are stored in natural units |
@@ -84,6 +84,7 @@ Break one of these and the results quietly become wrong - the tests catch most, 
 5. **Every random choice goes through a seeded generator.** For damage, use `perturb.run_rng(seed, kind, level, run)`; it makes each run reproducible on its own. Do not use `random` or `np.random` global functions.
 6. **Forest prediction is single-threaded.** With several threads the sum over the trees changes in the 16th digit from call to call, which breaks bit-identical reproducibility (found in step 10). Training can stay multi-threaded.
 7. **Functions do not modify their input graph.** `perturb.*` returns a copy.
+8. **Keep the model roles distinct.** `rf_without_pagerank` is the primary model. `rf_with_pagerank` receives its PageRank target as an input and is only a direct-leakage control. Both still predict PageRank, so predictive accuracy is proxy agreement rather than independent validation of importance.
 
 ---
 

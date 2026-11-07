@@ -18,12 +18,12 @@ The system takes a citation network (papers that cite each other) and ranks the 
 | Closeness | how quickly the rest of the network reaches the paper through citations |
 | PageRank | a paper is important if important papers cite it |
 | k-core | how deep the paper sits inside a densely connected group |
-| **Random Forest (without PageRank input)** | a machine-learning model that combines degree, betweenness, closeness and k-core into one score |
-| Random Forest (with PageRank input) | the same, but it also gets PageRank as an input (the design of Phase A as written) |
+| **Random Forest without PageRank (primary)** | predicts the PageRank proxy from degree, betweenness, closeness and k-core |
+| Random Forest with PageRank (leakage control) | also receives the target itself, so it tests the leakage in the Phase A design rather than serving as scientific evidence |
 
-Both forests are trained to predict PageRank on the original network.
+Both forests are trained to predict PageRank on the original network. Predicting that proxy well does not prove that either score is independently “true” node importance. The primary scientific question is tested separately by applying the frozen models to perturbed graphs and measuring robustness.
 
-Then the system **damages** the network on purpose - it deletes some citations or adds fake ones - and checks **how much each ranking changes**. A ranking that hardly changes is *stable*. The research question is whether the Random Forest ranks papers more stably than any single measure.
+Then the system **damages** the network on purpose - it deletes some citations or adds fake ones - and checks **how much each ranking changes**. A ranking that hardly changes is *stable*. Conclusions use the primary model; the leakage control is reported separately.
 
 The data is the PubMed-Diabetes dataset: 19,717 papers about diabetes and 44,324 citations between them.
 
@@ -155,7 +155,8 @@ Things to keep in mind when comparing methods:
 
 - **Ties make a method look stable.** k-core has only 10 different values and degree only 82, so most papers are tied and stay tied. Betweenness is 0 for 91 % of papers. The *top 10 %* columns are a fairer comparison.
 - **Saturation.** A Random Forest cannot predict outside the range it saw during training. After strong damage, many papers fall outside that range and the forest gives them all the same score. Their score then stops moving - it looks stable, but only because the model can no longer tell them apart.
-- **Compare the forest mainly with PageRank.** The forest was trained to imitate PageRank, so PageRank is its natural comparison. Degree and k-core measure a different kind of importance.
+- **Predictive agreement is not robustness.** Hold-out agreement says how well the primary model approximates its PageRank target. Perturbation stability says how much a ranking changes under damaged data; neither establishes ground-truth importance.
+- **Compare the primary model with every baseline, but interpret them carefully.** PageRank is the target-matched comparison. Degree, betweenness, closeness and k-core represent different notions of importance and remain important robustness baselines. Current results are mixed: the primary model beats PageRank under addition, loses under removal, and does not beat the strongest simple baselines overall.
 
 The main findings are written up in `docs/results_summary.md`.
 

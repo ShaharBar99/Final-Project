@@ -8,8 +8,8 @@ import pandas as pd
 from . import config, data, experiment, model, perturb, ranking, stability
 
 METHOD_LABELS = {
-    "rf_without_pagerank": "Random Forest (without PageRank input)",
-    "rf_with_pagerank": "Random Forest (with PageRank input)",
+    model.PRIMARY_MODEL: "Random Forest without PageRank (primary)",
+    model.CONTROL_MODEL: "Random Forest with PageRank (leakage control)",
     "pagerank": "PageRank",
     "closeness": "Closeness",
     "degree": "Degree",

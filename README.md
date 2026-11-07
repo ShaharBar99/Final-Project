@@ -1,7 +1,7 @@
 # Stability and Structural Validity of Learned Node Importance in Citation Networks
 
 Braude College of Engineering - Final Project, Phase B.
-Question: does a Random Forest that combines several centrality measures give node rankings that are more stable under edge noise than any single measure?
+Question: does a Random Forest trained to approximate PageRank from four other centralities give rankings that are more stable under edge noise than PageRank or the five centrality baselines? The no-PageRank forest is the primary scientific model; the forest that also receives its PageRank target is retained only as a direct-leakage control.
 
 ## Layout
 - `data/raw/` original PubMed-Diabetes files, `data/processed/` cleaned graph

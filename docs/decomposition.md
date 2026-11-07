@@ -35,7 +35,7 @@ in `src/`, has a clear input and output, and can be tested alone.
 
 ## Experiment grid (what actually gets run)
 
-- Methods compared: Random Forest (with PageRank as feature), Random Forest (without PageRank, decision D2), and the 5 single centralities as baselines.
+- Methods compared: Random Forest without PageRank (**primary model**, decision D2), Random Forest with PageRank (**direct-leakage control**), and all five single centralities as baselines. Both forests predict PageRank; predictive agreement with that proxy is separate from perturbation robustness.
 - Perturbation kinds: removal, addition (and optionally both together).
 - Levels: 5%, 10%, 20% of edges.
 - Repetitions K per setting (start with K = 10 to test, final K decided by runtime).

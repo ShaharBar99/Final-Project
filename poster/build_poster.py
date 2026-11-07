@@ -41,8 +41,8 @@ WHITE = "FFFFFF"
 
 # one colour per method, used in every chart and in the legend
 METHOD_STYLE = {
-    "rf_without_pagerank": ("Random Forest (no PageRank input)", "D98E04", 7.0),
-    "rf_with_pagerank": ("Random Forest (with PageRank input)", "F2C57C", 4.5),
+    "rf_without_pagerank": ("Primary RF (no PageRank input)", "D98E04", 7.0),
+    "rf_with_pagerank": ("Leakage control RF (with PageRank)", "F2C57C", 4.5),
     "pagerank": ("PageRank", "B23A48", 4.5),
     "closeness": ("Closeness", "5B8E7D", 3.5),
     "degree": ("Degree", "7A8B99", 3.5),
@@ -217,7 +217,7 @@ def build():
     statement_w = Inches(11.6)
     text(slide, MARGIN + pad, y + pad, statement_w, band_h - 2 * pad, [
         ([run("KEY FINDING", size=26, bold=True, color="D98E04")], {"after": 10}),
-        ([run("Combining centralities with a Random Forest makes the ranking more robust than "
+        ([run("The primary no-PageRank forest is more robust than "
               "PageRank — the measure it learns — against ", size=34, color=INK),
           run("added", size=34, bold=True, color=INK),
           run(" citations, but not against ", size=34, color=INK),
@@ -227,9 +227,9 @@ def build():
 
     stats = [
         (f"{stay_top('add_dag', 'rf_without_pagerank'):.0%} vs {stay_top('add_dag', 'pagerank'):.0%}",
-         "of the top-10 % papers stay on top: forest vs PageRank, after adding 20 % citations"),
+         "of the top-10 % papers stay on top: primary model vs PageRank, after adding 20 % citations"),
         (f"{spearman('remove', 'rf_without_pagerank', 0.2):.2f} vs {spearman('remove', 'pagerank', 0.2):.2f}",
-         "Spearman with the original ranking after removing 20 % of citations: forest vs PageRank"),
+         "Spearman with the original ranking after removing 20 % of citations: primary model vs PageRank"),
         ("270", "damaged networks: 3 kinds of damage × 3 levels × 30 runs"),
     ]
     stat_x = MARGIN + pad + statement_w + Inches(0.6)
@@ -334,7 +334,8 @@ def build():
     text(slide, MARGIN, yy + step_h + Inches(0.3), CONTENT_W, Inches(0.8), [
         ([run("Two forests are compared with the five single measures. The forest that also gets PageRank as an "
               "input (the original design) just copies it — 99.8 % of its feature importance — so the "
-              "forest without it is the main model.", size=24, italic=True, color=MUTED)], {}),
+              "forest without it is the primary model; the former is a direct-leakage control.",
+              size=24, italic=True, color=MUTED)], {}),
     ], name="method note")
 
     # ---------- row 3: Spearman charts
@@ -351,8 +352,8 @@ def build():
         _spearman_chart(slide, MARGIN + i * (chart_w + Inches(0.4)), chart_y, chart_w, chart_h, kind, title)
     text(slide, MARGIN, chart_y + chart_h + Inches(0.15), CONTENT_W, Inches(0.9), [
         ([run("Mean Spearman correlation between the original ranking and the damaged one (30 runs per point; "
-              "the runs agree closely). The forest beats PageRank when citations are added, not when they are "
-              "removed. Left panel: PageRank, closeness and the forest with PageRank input lie on top of each "
+              "the runs agree closely). The primary model beats PageRank when citations are added, not when they are "
+              "removed. Left panel: PageRank, closeness and the leakage control lie on top of each "
               "other. k-core (not shown) behaves like degree.", size=24, color=MUTED)], {}),
     ], name="spearman caption")
 
@@ -390,11 +391,11 @@ def build():
     box(slide, right, y, col2, Inches(5.25), INK, MSO_SHAPE.ROUNDED_RECTANGLE, name="conclusion panel")
     text(slide, right + Inches(0.6), y + Inches(0.45), col2 - Inches(1.2), Inches(4.4), [
         ([run("Conclusion", font=HEAD_FONT, size=46, bold=True, color=WHITE)], {"after": 14}),
-        ([run("A learned combination of centralities is more robust than PageRank against noisy citations, "
-              "especially at the top of the ranking. The gain does not extend to missing citations, and simple "
+        ([run("The primary PageRank-proxy model is more robust than PageRank against added citations, "
+              "especially at the top. The gain does not extend to missing citations, and simple "
               "local measures stay the most stable.", size=30, color=WHITE)], {"after": 18, "line": 1.05}),
         ([run("Limits: ", size=26, bold=True, color="F2C57C"),
-          run("one dataset, one target (PageRank), one model type; trees cannot extrapolate.", size=26,
+          run("one dataset, one proxy target (PageRank), no ground-truth importance; trees cannot extrapolate.", size=26,
               color="CADCE8")], {}),
     ], name="conclusion")
 
