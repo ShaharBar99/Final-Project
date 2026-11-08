@@ -186,8 +186,8 @@ with tab_results:
 
 with tab_about:
     st.markdown("""
-**Question.** Does a Random Forest trained as a PageRank proxy rank papers more stably than
-PageRank and the other centrality baselines when the citation data is incomplete or noisy?
+**Question.** Does a Random Forest that combines several centrality measures rank papers more
+stably than any single measure when the citation data is incomplete or noisy?
 
 **Pipeline** (every step is a module in `src/`):
 1. **Clean graph** - 19,717 papers, 44,324 citations, no self-loops, no cycles.
