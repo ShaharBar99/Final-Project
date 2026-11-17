@@ -151,3 +151,6 @@ Replaced the log-log degree plot in `01_clean_data` with grouped bars (share of 
 
 ## Notebook 2 plots and notes (2026-11-06)
 Improved `02_features`: feature guide table with the closeness change flagged (D17), distribution panels that state the share of zeros (log x-axis, zeros not drawn), Spearman heat map, findings text. Figures saved as `results/features_distribution.png` and `results/features_spearman.png` and shown again in markdown cells. No data or code in `src/` changed.
+
+## Status summary after Niran's changes (2026-11-17)
+Wrote `docs/project_status_after_niran.docx/.pdf` (2 pages): main code parts, what Niran changed, what is done, what is still to do (cache-check bug, rebuild of saved files, stale poster/notebook wording, open decisions, remaining work). No code changed.
