@@ -1,10 +1,11 @@
-"""Loading and cleaning of the PubMed-Diabetes citation data.
+"""Loading and cleaning of the citation data (PubMed-Diabetes, Cora, CiteSeer).
 
 Every cleaning step records what it did in a `log` list, so the cleaning
 report can be built from what actually happened and not from what we remember.
 """
 import json
 
+import igraph as ig
 import networkx as nx
 import pandas as pd
 
@@ -46,6 +47,20 @@ def load_edges(path=config.EDGES_FILE):
             parts = line.split()
             rows.append((parts[1].split(":")[1], parts[3].split(":")[1]))
     return pd.DataFrame(rows, columns=["source", "target"])
+
+
+def load_linqs(name):
+    """Read Cora or CiteSeer from data/raw/<name>/.
+
+    <name>.nodes.tab   paper id and class label (made from the .content file, see data/raw/<name>/SOURCE.md)
+    <name>.cites       lines "<cited paper> <citing paper>", i.e. the link goes from the SECOND id to the first.
+    Returns (nodes, edges) in the same shape as load_nodes / load_edges: edge = source cites target.
+    """
+    folder = config.RAW_DIR / name
+    nodes = pd.read_csv(folder / f"{name}.nodes.tab", sep="	", dtype=str)
+    cites = pd.read_csv(folder / f"{name}.cites", sep="	", header=None, names=["cited", "citing"], dtype=str)
+    edges = pd.DataFrame({"source": cites["citing"], "target": cites["cited"]})
+    return nodes, edges
 
 
 # ---------------------------------------------------------------- cleaning steps
@@ -109,6 +124,38 @@ def remove_isolated_nodes(nodes, edges, log):
     return nodes[keep]
 
 
+def break_citation_cycles(edges, log):
+    """Remove the fewest citations needed so that no citation loop is left.
+
+    Papers cannot cite each other, directly or through a chain, because a paper
+    can only cite older papers. PubMed IDs grow with time, so for PubMed we could
+    drop the single wrong edge of each mutual pair (resolve_mutual_citations).
+    Cora and CiteSeer have no dates and their ids are not in time order, so we
+    cannot tell which edge of a loop is the wrong one. Instead we remove a
+    minimum set of edges that makes the graph acyclic (a minimum feedback arc set,
+    solved exactly for every strongly connected group). See docs/decisions.md D18.
+    """
+    papers = pd.unique(pd.concat([edges["source"], edges["target"]]))
+    index = {paper: i for i, paper in enumerate(papers)}
+    pairs = [(index[a], index[b]) for a, b in zip(edges["source"], edges["target"])]
+    graph = ig.Graph(n=len(papers), edges=pairs, directed=True)
+    pair_set = set(pairs)
+    mutual = sum(1 for a, b in pair_set if a < b and (b, a) in pair_set)
+
+    drop = set()
+    groups = [g for g in graph.connected_components(mode="strong") if len(g) > 1]
+    for group in groups:
+        sub = graph.induced_subgraph(group)
+        for edge_id in sub.feedback_arc_set(method="ip"):
+            a, b = sub.es[edge_id].tuple
+            drop.add((group[a], group[b]))
+    removed = [pair in drop for pair in pairs]
+    log.append({"step": "break_citation_cycles",
+                "mutual_pairs_before": mutual, "loop_groups_before": len(groups),
+                "removed": int(sum(removed)), "edges_left": int(len(pairs) - sum(removed))})
+    return edges[[not r for r in removed]]
+
+
 def check_graph(edges, log):
     """Final sanity checks - these only report, they do not change the data."""
     g = nx.from_pandas_edgelist(edges, "source", "target", create_using=nx.DiGraph)
@@ -123,18 +170,30 @@ def check_graph(edges, log):
 
 # ---------------------------------------------------------------- full pipeline
 
-def clean_dataset():
-    """Run all cleaning steps in order. Returns (nodes, edges, log)."""
+def clean_dataset(dataset=None):
+    """Run all cleaning steps in order. Returns (nodes, edges, log).
+
+    PubMed-Diabetes keeps the steps of the original study (mutual citations are resolved with the
+    PubMed-ID rule). Cora and CiteSeer use the same steps, but loops are removed by
+    break_citation_cycles because they have no usable time information.
+    """
+    dataset = dataset or config.DATASET
     log = []
-    nodes = load_nodes()
-    edges = load_edges()
+    if dataset == "pubmed":
+        nodes, edges = load_nodes(), load_edges()
+    else:
+        nodes, edges = load_linqs(dataset)
     log.append({"step": "load_raw", "nodes": len(nodes), "edges": len(edges),
                 "label_counts": nodes["label"].value_counts().sort_index().to_dict()})
 
     edges = remove_duplicate_edges(edges, log)
     edges = remove_self_loops(edges, log)
-    edges = resolve_mutual_citations(edges, log)
-    edges = keep_known_papers(edges, nodes, log)
+    if dataset == "pubmed":
+        edges = resolve_mutual_citations(edges, log)
+        edges = keep_known_papers(edges, nodes, log)
+    else:
+        edges = keep_known_papers(edges, nodes, log)
+        edges = break_citation_cycles(edges, log)
     nodes = remove_isolated_nodes(nodes, edges, log)
     check_graph(edges, log)
 

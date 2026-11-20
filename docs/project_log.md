@@ -154,3 +154,15 @@ Improved `02_features`: feature guide table with the closeness change flagged (D
 
 ## Status summary after Niran's changes (2026-11-17)
 Wrote `docs/project_status_after_niran.docx/.pdf` (2 pages): main code parts, what Niran changed, what is done, what is still to do (cache-check bug, rebuild of saved files, stale poster/notebook wording, open decisions, remaining work). No code changed.
+
+## Other datasets, closeness test, results report, figure numbering (2026-11-20)
+Lecturer's remarks: (1) test the forest without closeness, on other datasets too; (2) explain why there are two forests; (3) number all figures; (4) show the experiment results clearly (PDF or HTML).
+Done on branch `multi-dataset` (main untouched):
+- Cora and CiteSeer downloaded from LINQS and cleaned with `break_citation_cycles` (D18, D20); raw files in `data/raw/`, made by `scripts/prepare_linqs_raw.py`.
+- `src/config.py` reads `CITATION_DATASET` and `FEATURE_SET`; every run has its own folders; `FEATURE_SET=no_closeness` removes closeness everywhere (D19).
+- `scripts/run_pipeline.py` runs clean -> features -> forests -> base ranking -> 270 damaged graphs -> tables for any run. Six runs: 3 datasets x with / without closeness (PubMed with closeness was rebuilt too; its tables differ from the earlier ones by at most 2e-5 in a few instability correlations).
+- Cache-check bug fixed in `src/cache_metadata.py` (paper ids compared as text) with a test; 85 tests pass.
+- `scripts/build_report.py` builds `results/report/results_report.html/.pdf` (10 pages, 8 figures, 8 tables, every number from the tables, key sentences asserted).
+- Figures numbered (D21): report, notebooks 01, 02, 03, 07, 08, 09, `docs/results_summary.md`, poster (Figure 1 and 2).
+Findings: the forest is not the most stable method in any dataset; it keeps the top 10 % more stable than PageRank only in PubMed-Diabetes; closeness carries 47 / 90 / 94 % of the primary forest and removing it lowers hold-out R^2 by 0.38-0.49 (D19).
+Open: the poster text still states the PubMed-only conclusion (see report); not merged into main yet.

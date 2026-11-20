@@ -11,8 +11,8 @@ from . import cache_metadata, config, features
 TARGET = "pagerank"
 
 # the two versions of the model (decision D2 in docs/decisions.md)
-FEATURES_WITH_PAGERANK = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
-FEATURES_WITHOUT_PAGERANK = ["degree", "betweenness", "closeness", "kcore"]
+FEATURES_WITH_PAGERANK = list(features.FEATURE_NAMES)
+FEATURES_WITHOUT_PAGERANK = [name for name in features.FEATURE_NAMES if name != TARGET]
 
 # Scientific roles.  These identifiers are also the persisted score-column
 # names, so keep them stable for compatibility with existing experiment files.

@@ -1,0 +1,44 @@
+{
+  "dataset": "citeseer",
+  "feature_set": "no_closeness",
+  "features": [
+    "degree",
+    "betweenness",
+    "pagerank",
+    "kcore"
+  ],
+  "holdout": {
+    "with_pagerank": {
+      "r2": 0.9373838276903392,
+      "spearman": 0.9630537160490349
+    },
+    "without_pagerank": {
+      "r2": 0.45017379003838554,
+      "spearman": 0.3951939958552595
+    }
+  },
+  "single_centrality_spearman_vs_pagerank": {
+    "degree": 0.35549721715831406,
+    "betweenness": 0.3945456848098201,
+    "kcore": 0.22593334890646724
+  },
+  "feature_importance": {
+    "with_pagerank": {
+      "degree": 0.0,
+      "betweenness": 0.0,
+      "pagerank": 1.0,
+      "kcore": 0.0
+    },
+    "without_pagerank": {
+      "degree": 0.837,
+      "betweenness": 0.092,
+      "kcore": 0.071
+    }
+  },
+  "forest_settings": {
+    "n_estimators": 200,
+    "min_samples_leaf": 5,
+    "n_jobs": -1
+  },
+  "seed": 42
+}

@@ -179,3 +179,13 @@ def test_corrupt_experiment_metadata_is_rejected(tmp_path):
     with pytest.raises(cache_metadata.CacheValidationError):
         experiment.load_setting("remove", 0.0, runs_dir=tmp_path)
     assert path.read_bytes() == before
+
+
+def test_table_fingerprint_ignores_how_paper_ids_were_loaded():
+    scaled, _, _ = training_tables()
+    numeric = scaled.copy()
+    numeric.index = range(len(numeric))
+    text = numeric.copy()
+    text.index = text.index.astype(str)
+    assert cache_metadata.table_fingerprint(numeric) == cache_metadata.table_fingerprint(text)
+    assert cache_metadata.table_fingerprint(scaled) != cache_metadata.table_fingerprint(scaled.iloc[::-1])

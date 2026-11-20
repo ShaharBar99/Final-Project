@@ -5,6 +5,8 @@ Experiment: 3 kinds of damage (remove / add_random / add_dag) x 3 levels (5 / 10
 Methods: Random Forest **without** PageRank as input (**primary model**), Random Forest **with** PageRank as input (**direct-leakage control**), and the five single centralities (**baselines**). Both forests predict PageRank; neither learns an independently validated definition of node importance.
 All numbers come from `results/tables/`; notebooks 07 and 08 rebuild them.
 
+**This summary covers PubMed-Diabetes only.** The same experiment on Cora and CiteSeer, the test without closeness and the comparison of the three datasets are in `results/report/results_report.pdf` (HTML next to it); they change the picture: the forest is more stable than PageRank at the top of the ranking only in PubMed-Diabetes.
+
 ## Short answer
 
 The primary model does **not** give the most stable ranking overall. It is more stable than **PageRank - the proxy target it was trained to predict** - under the tested edge-addition settings, with the largest gains at the top of the ranking. Under edge removal it is slightly less stable than PageRank. Simple local baselines (degree, k-core) are the most stable overall, partly because they are coarse (many ties). These are robustness results, not evidence that the learned score is a truer measure of importance.
@@ -37,6 +39,8 @@ The primary model does **not** give the most stable ranking overall. It is more 
 6. **One dataset and one proxy target.** All results are for PubMed-Diabetes and PageRank only.
 
 ## Figures
-- `results/spearman_vs_level.png` - global Spearman vs damage level, per kind
-- `results/top10_retention.png` - share of the top 10 % that stays in the top 10 %
-- `results/importance_vs_cv.png` - importance vs instability, primary model, add_dag 10 %
+- **Figure 1** (`results/spearman_vs_level.png`): global Spearman against the base ranking, per kind of damage and share of edges changed.
+- **Figure 2** (`results/top10_retention.png`): share of the runs in which a top-10 % paper stays in the top 10 %.
+- **Figure 3** (`results/importance_vs_cv.png`): importance against instability, primary model, add_dag 10 %.
+
+Figures 1 to 3 are the PubMed-Diabetes figures of notebooks 07 and 08; the report has its own numbering (Figure 1 to Figure 8).

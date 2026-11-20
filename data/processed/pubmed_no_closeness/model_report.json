@@ -1,0 +1,44 @@
+{
+  "dataset": "pubmed",
+  "feature_set": "no_closeness",
+  "features": [
+    "degree",
+    "betweenness",
+    "pagerank",
+    "kcore"
+  ],
+  "holdout": {
+    "with_pagerank": {
+      "r2": 0.999357372649115,
+      "spearman": 0.9999950611612124
+    },
+    "without_pagerank": {
+      "r2": 0.2591313224250602,
+      "spearman": 0.4783785427335817
+    }
+  },
+  "single_centrality_spearman_vs_pagerank": {
+    "degree": 0.2881335305955736,
+    "betweenness": 0.18824231220979423,
+    "kcore": 0.37005541082993687
+  },
+  "feature_importance": {
+    "with_pagerank": {
+      "degree": 0.002,
+      "betweenness": 0.0,
+      "pagerank": 0.998,
+      "kcore": 0.0
+    },
+    "without_pagerank": {
+      "degree": 0.515,
+      "betweenness": 0.151,
+      "kcore": 0.334
+    }
+  },
+  "forest_settings": {
+    "n_estimators": 200,
+    "min_samples_leaf": 5,
+    "n_jobs": -1
+  },
+  "seed": 42
+}

@@ -351,10 +351,11 @@ def build():
     for i, (kind, title) in enumerate(kinds):
         _spearman_chart(slide, MARGIN + i * (chart_w + Inches(0.4)), chart_y, chart_w, chart_h, kind, title)
     text(slide, MARGIN, chart_y + chart_h + Inches(0.15), CONTENT_W, Inches(0.9), [
-        ([run("Mean Spearman correlation between the original ranking and the damaged one (30 runs per point; "
+        ([run("Figure 1. ", size=24, bold=True, color=MUTED),
+          run("Mean Spearman correlation between the original ranking and the damaged one (30 runs per point; "
               "the runs agree closely). The primary model beats PageRank when citations are added, not when they are "
               "removed. Left panel: PageRank, closeness and the leakage control lie on top of each "
-              "other. k-core (not shown) behaves like degree.", size=24, color=MUTED)], {}),
+              "other. k-core (not shown) behaves like degree. PubMed-Diabetes.", size=24, color=MUTED)], {}),
     ], name="spearman caption")
 
     # ---------- row 4: top retention + hypotheses
@@ -364,7 +365,8 @@ def build():
     yy = section_title(slide, left, y, 6, "Do the top papers stay on top?", col2)
     _stay_chart(slide, left, yy, col2, Inches(5.4))
     text(slide, left, yy + Inches(5.5), col2, Inches(1.1), [
-        ([run("Share of runs in which a top-10 % paper is still in the top 10 %, at 20 % damage. "
+        ([run("Figure 2. ", size=24, bold=True, color=MUTED),
+          run("Share of runs in which a top-10 % paper is still in the top 10 %, at 20 % damage (PubMed-Diabetes). "
               "Under added noise most of PageRank’s top papers are fragile; the forest keeps more of them.",
               size=24, color=MUTED)], {}),
     ], name="stay caption")

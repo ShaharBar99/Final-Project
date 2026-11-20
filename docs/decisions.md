@@ -19,6 +19,10 @@
 | D16 | Network core reported with two rules: Phase A as written (stable = CV <= 10th percentile of all papers) and adjusted (stable = CV <= median CV of the top-10 % papers). Important = top 10 % of the method's base ranking | The Phase A rule is degenerate on this data: under removal its threshold is 0 and it selects only bottom-ranked papers whose score never changes, so the core is empty. The adjusted rule keeps the Phase A idea (important AND stable) but judges stability where it matters. The Phase A result is kept as a finding | 2026-10-23 |
 | D6 | Drop the 500 word-feature columns | Not part of the structural model | 2026-10-10 |
 | D17 | Closeness = Wasserman-Faust with **incoming** distances: CL(v) = [r / sum d(u,v)] * [r / (N-1)], r = number of papers that reach v; 0 if r = 0. Replaces the Phase A formula (N-1) / sum d(v,y) (outgoing distances) | Phase A's formula gives 0 to all 19,717 papers on a citation DAG (nobody reaches everybody). Outgoing distances with the correction still give 0 to 80 % and correlate -0.27 with PageRank; incoming gives 0 to 10 % and +0.73. Equal to Phase A's formula whenever that is defined. **Needs advisor approval.** Details: D17 in more detail | 2026-11-02 |
+| D18 | For Cora and CiteSeer, citation loops are removed with a minimum feedback arc set (the fewest edges so that no loop is left), solved exactly for every strongly connected group | These datasets have no dates and their ids are not in time order, so the PubMed-ID rule of D5 cannot be used; they contain mutual citations and longer loops (Cora 151 mutual pairs, CiteSeer 55), and a loop-free graph is needed for a time order (add_dag) | 2026-11-20 |
+| D19 | The closeness question of the lecturer is tested as a separate configuration (`FEATURE_SET=no_closeness`, branch `multi-dataset`): closeness is dropped from the features, both forests and the list of single measures; the main code is unchanged. Result: keep closeness | Lecturer asked to test the forest without closeness and to check whether the answer is the same on other datasets. Removing it lowers hold-out R^2 by 0.38-0.49 in all three datasets; stability gets worse in Cora and CiteSeer and is mixed in PubMed-Diabetes | 2026-11-20 |
+| D20 | Cora and CiteSeer (LINQS, linqs-data.soe.ucsc.edu/public/lbc/) are run through the same pipeline next to PubMed-Diabetes; every result is reported for all three | Lecturer asked whether the findings hold on other citation networks. `.cites` lines are `<cited> <citing>`, so the edge goes from the second id to the first; only id and label are kept from the `.content` files | 2026-11-20 |
+| D21 | Every figure and table that is used is numbered (Figure 1, Table 1, ...) with a caption below it, and the text refers to it as Figure N / Table N. The results report builds the numbers and checks that every figure and table is mentioned in the text | Lecturer's technical remark for all documents | 2026-11-20 |
 
 ## D4 in more detail
 **Original idea (2026-10-10):** approximate betweenness from sampled source nodes, because we assumed exact betweenness would be too slow on 19.7k nodes.
@@ -47,3 +51,26 @@ When r = N - 1 this equals the Phase A formula (apart from direction). Same as n
 
 **Why incoming:** it follows the direction in which a paper's influence travels (cited -> citing), the meaning Phase A gives to closeness ("how rapidly a node's influence reaches across the network"). **Risk:** the Phase A wording is "from a node to all other nodes".
 **Alternative:** `mode="out"` in `src/features.py::_closeness` and rerun from notebook 02. Full write-up with an example: `docs/phaseA_vs_steps_1-2_v2.pdf`.
+
+## D2 in more detail - why there are two forests (written for the lecturer's question)
+**Phase A:** the feature vector holds degree, betweenness, closeness, PageRank and k-core, and the forest is trained to predict PageRank. PageRank is therefore an input *and* the target.
+**Problem:** a forest that is given the answer copies it. Measured on all three datasets, the forest with PageRank as an input puts 99.8 % (PubMed-Diabetes), 99.5 % (Cora) and 99.8 % (CiteSeer) of its decisions on that one input. Its ranking is then PageRank with a little noise, so asking whether it is more stable than PageRank does not test whether combining measures helps.
+**Decision:** train both. The forest *with* PageRank is Phase A exactly as written and is kept as a control. The forest *without* PageRank is the primary model: it has to rebuild importance from degree, betweenness, closeness and k-core, and the conclusions of the report are drawn from it.
+
+| | PubMed-Diabetes | Cora | CiteSeer |
+|---|---|---|---|
+| Hold-out R^2, with PageRank / without | 1.00 / 0.75 | 0.91 / 0.67 | 0.94 / 0.84 |
+| Mean Spearman of the control minus PageRank (9 settings) | -0.058 | -0.001 | -0.014 |
+
+**What is better:** the primary forest predicts PageRank worse, as it must. It is better as a test of the research question because its stability is free to differ from PageRank's, while the control can at best equal it. The control was never more stable than PageRank on average, and in PubMed-Diabetes it was clearly less stable after edges were added (trees cannot predict outside the training range).
+**Other datasets:** the reason does not depend on the dataset (the control copied its input in all three). Whether the primary forest is *more stable than PageRank* does depend on it: yes for the top 10 % in PubMed-Diabetes (6 of 9 settings), no in Cora and CiteSeer (0 of 9). See `results/report/results_report.pdf`, Sections 3 and 4.
+
+## D18 in more detail - citation loops without dates
+Cora: 2,708 papers, 5,429 links, 151 mutual pairs, 122 groups of papers that cite each other in a loop; 155 edges removed (2.9 %) to leave a DAG.
+CiteSeer: 3,312 papers, 4,732 links; 124 self-citations and 17 links to unknown papers removed first, then 56 edges for loops (55 mutual pairs, 47 loop groups), then 48 isolated papers; 3,264 papers and 4,535 citations remain.
+The minimum is found exactly (integer programming, igraph `feedback_arc_set(method="ip")`) inside every strongly connected group; the groups are small (the largest has 13 papers in Cora, 10 in CiteSeer). Which edge of a loop is removed is decided by the solver, not by time, so this is a choice and not a fact. Alternatives that were not used: remove both edges of every mutual pair (removes more, still leaves longer loops), keep the loops (then there is no time order and `add_dag` is impossible).
+
+## D19 in more detail - the closeness test
+Hold-out R^2 of the primary forest, with closeness / without: PubMed-Diabetes 0.75 / 0.26, Cora 0.67 / 0.28, CiteSeer 0.84 / 0.45. Closeness carries 47 %, 90 % and 94 % of the primary forest's decisions.
+Change in stability without closeness (average over the 9 damage settings): Spearman -0.105 (Cora), -0.082 (CiteSeer), +0.028 (PubMed-Diabetes); top-10 % stay -0.058, -0.026 and -0.036. The small gain in PubMed-Diabetes comes with a forest that predicts PageRank far worse and leans on degree and k-core.
+**Answer to the lecturer:** not better without closeness (accuracy: no in all three; stability: worse in two datasets, mixed in one), and the effect is not the same on every dataset. Recommendation: keep closeness. To run the test again: `CITATION_DATASET=<name> FEATURE_SET=no_closeness python scripts/run_pipeline.py`.

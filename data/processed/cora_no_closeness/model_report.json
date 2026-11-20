@@ -1,0 +1,44 @@
+{
+  "dataset": "cora",
+  "feature_set": "no_closeness",
+  "features": [
+    "degree",
+    "betweenness",
+    "pagerank",
+    "kcore"
+  ],
+  "holdout": {
+    "with_pagerank": {
+      "r2": 0.9029854867488986,
+      "spearman": 0.9998739050374357
+    },
+    "without_pagerank": {
+      "r2": 0.28189860780781073,
+      "spearman": 0.5363816684033028
+    }
+  },
+  "single_centrality_spearman_vs_pagerank": {
+    "degree": 0.4765326401162224,
+    "betweenness": 0.5816788584707653,
+    "kcore": 0.2671600971395078
+  },
+  "feature_importance": {
+    "with_pagerank": {
+      "degree": 0.0,
+      "betweenness": 0.0,
+      "pagerank": 1.0,
+      "kcore": 0.0
+    },
+    "without_pagerank": {
+      "degree": 0.841,
+      "betweenness": 0.146,
+      "kcore": 0.012
+    }
+  },
+  "forest_settings": {
+    "n_estimators": 200,
+    "min_samples_leaf": 5,
+    "n_jobs": -1
+  },
+  "seed": 42
+}

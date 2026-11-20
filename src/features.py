@@ -3,7 +3,11 @@ import igraph as ig
 import networkx as nx
 import pandas as pd
 
-FEATURE_NAMES = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
+from . import config
+
+ALL_FEATURES = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
+# FEATURE_SET=no_closeness drops closeness everywhere (test branch, see docs/decisions.md D19)
+FEATURE_NAMES = [name for name in ALL_FEATURES if name not in config.EXCLUDED_FEATURES]
 
 # Human-readable definitions are part of cache metadata. Change the matching
 # definition whenever a feature's mathematical convention changes.
@@ -71,7 +75,8 @@ def compute_features(g):
     table["degree"] = pd.Series(nx.degree_centrality(g))
     h = _to_igraph(g, nodes)
     table["betweenness"] = _betweenness(h, nodes)
-    table["closeness"] = _closeness(h, nodes)
+    if "closeness" in FEATURE_NAMES:
+        table["closeness"] = _closeness(h, nodes)
     table["pagerank"] = pd.Series(nx.pagerank(g, alpha=DAMPING))
     table["kcore"] = pd.Series(nx.core_number(undirected))
     return table[FEATURE_NAMES]

@@ -27,5 +27,15 @@ complete command after it passes; on a fresh clone, the real-data tests may buil
 the ignored model artifacts because they are not stored in Git.
 Then open the notebooks in order (also works in Google Colab: the first cell clones the repo).
 
+## Other datasets, the closeness test and the results report
+The pipeline also runs on Cora and CiteSeer (`data/raw/cora`, `data/raw/citeseer`) and without the closeness feature:
+
+```
+CITATION_DATASET=cora FEATURE_SET=no_closeness python scripts/run_pipeline.py
+python scripts/build_report.py
+```
+
+`CITATION_DATASET` is `pubmed`, `cora` or `citeseer`; `FEATURE_SET` is `full` or `no_closeness`. Each run writes to its own folder under `data/processed/` and `results/`. The results of all runs are compared in `results/report/results_report.pdf` (HTML next to it).
+
 ## Status
 See `docs/project_log.md`. Done: step 1 (cleaning), step 2 (decomposition), step 3 (features + frozen scaler), step 4 (Random Forest), step 5 (base ranking), step 6 (perturbation engine), step 7 (scores on 270 perturbed graphs), step 8 (stability metrics), step 9 (network core + hypotheses). Results: `docs/results_summary.md`. Step 10 (tests + profiling): `docs/testing_and_performance.md`. Demo: `notebooks/09_demo.ipynb`, app: `streamlit run app/app.py`. Guides: `docs/user_guide.md`, `docs/maintainer_guide.md`. Before sharing: `docs/review_before_sharing.md`. Poster: `poster/poster.pdf` (A0).

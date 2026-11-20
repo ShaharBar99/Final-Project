@@ -47,8 +47,14 @@ def file_sha256(path):
 
 
 def table_fingerprint(table):
-    """Fingerprint values, row order/index, columns, and dtypes of a Series/DataFrame."""
+    """Fingerprint values, row order/index, columns, and dtypes of a Series/DataFrame.
+
+    Paper ids are compared as text: the same csv read with and without dtype=str
+    (int64 or str index) is the same table and must give the same fingerprint.
+    """
     frame = table.to_frame() if isinstance(table, pd.Series) else table
+    frame = frame.copy()
+    frame.index = frame.index.astype(str)
     digest = hashlib.sha256()
     description = {
         "columns": [str(c) for c in frame.columns],

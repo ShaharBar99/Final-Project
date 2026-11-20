@@ -1,4 +1,13 @@
 {
+  "dataset": "pubmed",
+  "feature_set": "full",
+  "features": [
+    "degree",
+    "betweenness",
+    "closeness",
+    "pagerank",
+    "kcore"
+  ],
   "holdout": {
     "with_pagerank": {
       "r2": 0.9993570916953133,

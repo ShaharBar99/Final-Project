@@ -1,0 +1,56 @@
+[
+  {
+    "step": "load_raw",
+    "nodes": 3312,
+    "edges": 4732,
+    "label_counts": {
+      "AI": 249,
+      "Agents": 596,
+      "DB": 701,
+      "HCI": 508,
+      "IR": 668,
+      "ML": 590
+    }
+  },
+  {
+    "step": "remove_duplicate_edges",
+    "removed": 0,
+    "edges_left": 4732
+  },
+  {
+    "step": "remove_self_loops",
+    "removed": 124,
+    "edges_left": 4608,
+    "examples": [
+      "100157",
+      "133494",
+      "138121",
+      "146066",
+      "156949"
+    ]
+  },
+  {
+    "step": "drop_edges_with_unknown_papers",
+    "removed": 17,
+    "edges_left": 4591
+  },
+  {
+    "step": "break_citation_cycles",
+    "mutual_pairs_before": 55,
+    "loop_groups_before": 47,
+    "removed": 56,
+    "edges_left": 4535
+  },
+  {
+    "step": "remove_isolated_nodes",
+    "removed": 48,
+    "nodes_left": 3264
+  },
+  {
+    "step": "final_checks",
+    "nodes": 3264,
+    "edges": 4535,
+    "weakly_connected_components": 390,
+    "directed_cycles_groups": 0
+  }
+]

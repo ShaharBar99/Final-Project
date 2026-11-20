@@ -1,0 +1,48 @@
+{
+  "dataset": "cora",
+  "feature_set": "full",
+  "features": [
+    "degree",
+    "betweenness",
+    "closeness",
+    "pagerank",
+    "kcore"
+  ],
+  "holdout": {
+    "with_pagerank": {
+      "r2": 0.9058041880279195,
+      "spearman": 0.9998674361128137
+    },
+    "without_pagerank": {
+      "r2": 0.6730554931785513,
+      "spearman": 0.9821710785807488
+    }
+  },
+  "single_centrality_spearman_vs_pagerank": {
+    "degree": 0.4765326401162224,
+    "betweenness": 0.5816788584707653,
+    "closeness": 0.976393351515524,
+    "kcore": 0.2671600971395078
+  },
+  "feature_importance": {
+    "with_pagerank": {
+      "degree": 0.0,
+      "betweenness": 0.0,
+      "closeness": 0.005,
+      "pagerank": 0.995,
+      "kcore": 0.0
+    },
+    "without_pagerank": {
+      "degree": 0.09,
+      "betweenness": 0.009,
+      "closeness": 0.898,
+      "kcore": 0.003
+    }
+  },
+  "forest_settings": {
+    "n_estimators": 200,
+    "min_samples_leaf": 5,
+    "n_jobs": -1
+  },
+  "seed": 42
+}

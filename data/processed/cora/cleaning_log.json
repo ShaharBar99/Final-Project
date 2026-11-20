@@ -1,0 +1,51 @@
+[
+  {
+    "step": "load_raw",
+    "nodes": 2708,
+    "edges": 5429,
+    "label_counts": {
+      "Case_Based": 298,
+      "Genetic_Algorithms": 418,
+      "Neural_Networks": 818,
+      "Probabilistic_Methods": 426,
+      "Reinforcement_Learning": 217,
+      "Rule_Learning": 180,
+      "Theory": 351
+    }
+  },
+  {
+    "step": "remove_duplicate_edges",
+    "removed": 0,
+    "edges_left": 5429
+  },
+  {
+    "step": "remove_self_loops",
+    "removed": 0,
+    "edges_left": 5429,
+    "examples": []
+  },
+  {
+    "step": "drop_edges_with_unknown_papers",
+    "removed": 0,
+    "edges_left": 5429
+  },
+  {
+    "step": "break_citation_cycles",
+    "mutual_pairs_before": 151,
+    "loop_groups_before": 122,
+    "removed": 155,
+    "edges_left": 5274
+  },
+  {
+    "step": "remove_isolated_nodes",
+    "removed": 0,
+    "nodes_left": 2708
+  },
+  {
+    "step": "final_checks",
+    "nodes": 2708,
+    "edges": 5274,
+    "weakly_connected_components": 78,
+    "directed_cycles_groups": 0
+  }
+]

@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 data/processed/models/
 results/runs/
+results/*/runs/
+data/processed/*/models/
