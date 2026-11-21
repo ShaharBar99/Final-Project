@@ -166,3 +166,6 @@ Done on branch `multi-dataset` (main untouched):
 - Figures numbered (D21): report, notebooks 01, 02, 03, 07, 08, 09, `docs/results_summary.md`, poster (Figure 1 and 2).
 Findings: the forest is not the most stable method in any dataset; it keeps the top 10 % more stable than PageRank only in PubMed-Diabetes; closeness carries 47 / 90 / 94 % of the primary forest and removing it lowers hold-out R^2 by 0.38-0.49 (D19).
 Open: the poster text still states the PubMed-only conclusion (see report); not merged into main yet.
+
+## Results report in two parts (2026-11-21)
+Report restructured: Part I = the Phase A study on PubMed-Diabetes (method, dataset and cleaning, two forests, results, hypotheses); Part II = the same experiment on Cora and CiteSeer and the test without closeness. Each dataset gets a short summary with its source, content, size and what cleaning removed (computed from the cleaning logs). Phase A sections are named where the report says what Phase A planned. Data sources listed (to be verified before submission). 13 figures, 11 tables, 13 pages.

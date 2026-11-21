@@ -77,24 +77,26 @@ def flow():
 # ------------------------------------------------------------------ Figure: degrees of the datasets
 
 def degrees(graphs):
+    datasets = list(graphs)
+    w = 0.78 / len(datasets)
     """graphs: dict dataset -> DataFrame of edges (source, target) and node list."""
     groups = [-1, 0, 1, 2, 5, 10, 20, 10 ** 6]
     names = ["0", "1", "2", "3-5", "6-10", "11-20", "21+"]
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.6), sharey=True)
     x = np.arange(len(names))
-    w = 0.26
     for ax, which, title in zip(axes, ("in", "out"), ("In-degree: times a paper is cited",
                                                        "Out-degree: papers it cites")):
-        for k, ds in enumerate(DATASETS):
+        for k, ds in enumerate(datasets):
+            offset = (k - (len(datasets) - 1) / 2) * w
             nodes, edges = graphs[ds]
             col = "target" if which == "in" else "source"
             deg = edges[col].value_counts().reindex(nodes).fillna(0)
             share = pd.cut(deg, groups, labels=names).value_counts(normalize=True).reindex(names) * 100
-            bars = ax.bar(x + (k - 1) * w, share.values, w, color=DATASET_COLOR[ds], label=DATASET_LABEL[ds])
+            bars = ax.bar(x + offset, share.values, w, color=DATASET_COLOR[ds], label=DATASET_LABEL[ds])
             if which == "out":
-                ax.text(x[0] + (k - 1) * w, share.values[0] + 1.5, f"{share.values[0]:.0f}%", ha="center", fontsize=7)
+                ax.text(x[0] + offset, share.values[0] + 1.5, f"{share.values[0]:.0f}%", ha="center", fontsize=7)
             else:
-                ax.text(x[1] + (k - 1) * w, share.values[1] + 1.5, f"{share.values[1]:.0f}%", ha="center", fontsize=7)
+                ax.text(x[1] + offset, share.values[1] + 1.5, f"{share.values[1]:.0f}%", ha="center", fontsize=7)
         ax.set_xticks(x)
         ax.set_xticklabels(names)
         ax.set_xlabel("degree of the paper")
@@ -110,10 +112,11 @@ def degrees(graphs):
 def importance(models):
     """models: dict dataset -> model_report of the full feature set."""
     features = ["degree", "betweenness", "closeness", "pagerank", "kcore"]
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.2), sharey=True)
+    datasets = list(models)
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 1.4 + 0.6 * len(datasets)), sharey=True)
     for ax, version, title in zip(axes, ("without_pagerank", "with_pagerank"),
                                   ("Forest without PageRank (primary)", "Forest with PageRank (control)")):
-        for row, ds in enumerate(DATASETS):
+        for row, ds in enumerate(datasets):
             imp = models[ds]["feature_importance"][version]
             left = 0
             for f in features:
@@ -124,8 +127,8 @@ def importance(models):
                     ax.text(left + value / 2, row, f"{value:.0%}", ha="center", va="center", fontsize=7.5,
                             color="white" if f in ("degree", "closeness", "kcore") and f != "kcore" else "black")
                 left += value
-        ax.set_yticks(range(3))
-        ax.set_yticklabels([DATASET_LABEL[d] for d in DATASETS])
+        ax.set_yticks(range(len(datasets)))
+        ax.set_yticklabels([DATASET_LABEL[d] for d in datasets])
         ax.set_xlim(0, 1)
         ax.set_xlabel("share of the forest's decisions")
         ax.set_title(title)
@@ -133,17 +136,17 @@ def importance(models):
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, ncol=5, frameon=False, loc="lower center",
                bbox_to_anchor=(0.5, -0.02))
-    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.tight_layout(rect=(0, 0.16 if len(datasets) == 1 else 0.08, 1, 1))
     return fig
 
 
 # ------------------------------------------------------------------ Figures: stability curves, datasets x damage kinds
 
-def curves(runs, table, column, ylabel):
+def curves(runs, table, column, ylabel, datasets=DATASETS):
     """ylabel is written under the dataset name."""
     """3 x 3 grid: rows = datasets, columns = kinds of damage, one line per method."""
-    fig, axes = plt.subplots(3, 3, figsize=(11, 8.6), sharex=True)
-    for r, ds in enumerate(DATASETS):
+    fig, axes = plt.subplots(len(datasets), 3, figsize=(11, 0.9 + 2.6 * len(datasets)), sharex=True, squeeze=False)
+    for r, ds in enumerate(datasets):
         lo = 1.0
         for c, kind in enumerate(KINDS):
             ax = axes[r, c]
@@ -159,7 +162,7 @@ def curves(runs, table, column, ylabel):
                 ax.set_title(KIND_LABEL[kind])
             if c == 0:
                 ax.set_ylabel(f"{DATASET_LABEL[ds]}\n{ylabel}")
-            if r == 2:
+            if r == len(datasets) - 1:
                 ax.set_xlabel("% of citations changed")
             ax.set_xticks([5, 10, 20])
             ax.grid(alpha=0.25)
@@ -167,13 +170,14 @@ def curves(runs, table, column, ylabel):
             axes[r, c].set_ylim(max(0.0, lo - 0.04), 1.01)
     handles, labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, labels, ncol=4, frameon=False, loc="lower center", bbox_to_anchor=(0.5, -0.005))
-    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    fig.tight_layout(rect=(0, 0.06 if len(datasets) > 1 else 0.13, 1, 1))
     return fig
 
 
 # ------------------------------------------------------------------ Figure: primary forest minus a reference
 
-def difference(runs_a, runs_b, panels, ylabels, title_a=None, ref_method=None, method_a=PRIMARY, method_b=None):
+def difference(runs_a, runs_b, panels, ylabels, title_a=None, ref_method=None, method_a=PRIMARY, method_b=None,
+               datasets=DATASETS):
     """Bars: value of method_a in runs_a minus value of method_b in runs_b, for 9 settings x 3 datasets.
 
     panels: list of (table, column). runs_*: dict dataset -> run.
@@ -182,19 +186,20 @@ def difference(runs_a, runs_b, panels, ylabels, title_a=None, ref_method=None, m
     fig, axes = plt.subplots(1, len(panels), figsize=(5.6 * len(panels), 3.8), sharex=True)
     axes = np.atleast_1d(axes)
     x = np.arange(len(settings))
-    w = 0.26
+    w = 0.78 / len(datasets)
     for ax, (table, column), ylabel in zip(axes, panels, ylabels):
-        for k, ds in enumerate(DATASETS):
+        for k, ds in enumerate(datasets):
             vals = [metric(runs_a[ds], table, column, kind, lv, method_a)
                     - metric(runs_b[ds], table, column, kind, lv, method_b or ref_method) for kind, lv in settings]
-            ax.bar(x + (k - 1) * w, vals, w, color=DATASET_COLOR[ds], label=DATASET_LABEL[ds])
+            ax.bar(x + (k - (len(datasets) - 1) / 2) * w, vals, w, color=DATASET_COLOR[ds], label=DATASET_LABEL[ds])
         ax.axhline(0, color="#13293D", lw=0.9)
         ax.set_xticks(x)
         ax.set_xticklabels([f"{ {'remove': 'rem', 'add_random': 'rand', 'add_dag': 'dag'}[k]} {int(lv * 100)}%"
                             for k, lv in settings], rotation=60, ha="right", fontsize=7.5)
         ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.25)
-    axes[0].legend(frameon=False, fontsize=8)
+    if len(datasets) > 1:
+        axes[0].legend(frameon=False, fontsize=8)
     fig.tight_layout()
     return fig
 
