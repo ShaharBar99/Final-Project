@@ -21,9 +21,49 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src import config, demo, experiment, features, model, ranking, scaling  # noqa: E402
+from src import config, dashboard_report, demo, experiment, features, model, ranking, scaling  # noqa: E402
 
 st.set_page_config(page_title="Node importance under damage", layout="wide")
+st.markdown("""
+<style>
+  [data-testid="stSidebar"] [data-testid="stDownloadButton"] button {
+    background: linear-gradient(135deg, #d33f49 0%, #a8202a 100%);
+    color: white;
+    border: 2px solid #8d1821;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(168, 32, 42, 0.35);
+    font-weight: 700;
+    min-height: 3.25rem;
+  }
+  [data-testid="stSidebar"] [data-testid="stDownloadButton"] button:hover {
+    background: linear-gradient(135deg, #e24d58 0%, #b72732 100%);
+    border-color: #74131a;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(168, 32, 42, 0.45);
+  }
+</style>
+""", unsafe_allow_html=True)
+
+ABOUT_TEXT = """
+**Question.** Does a Random Forest that combines several centrality measures rank papers more
+stably than any single measure when the citation data is incomplete or noisy?
+
+**Pipeline** (every step is a module in `src/`):
+1. **Clean graph** - 19,717 papers, 44,324 citations, no self-loops, no cycles.
+2. **Features** - degree, betweenness, closeness, PageRank, k-core for every paper.
+3. **Frozen scaler** - Min-Max fitted once on the original graph and never refitted.
+4. **Random Forest** - the primary model predicts PageRank from the other four measures. A leakage
+   control also receives PageRank itself and therefore mostly copies its target.
+5. **Damage** - remove or add a share of the citations; the papers stay the same.
+6. **Re-score** - recompute the features on the damaged graph, use the same scaler and the same trained forest.
+7. **Compare** - Spearman / Kendall between rankings, how much of the top survives, per-paper variation.
+
+**Main finding.** The primary forest is more stable than PageRank when citations are *added*, especially
+at the top, but a little less stable when citations are *removed*. It is not the most robust method:
+simple local measures (degree, k-core) are more stable overall. Agreement with its PageRank target does
+not establish an independent or true notion of importance.
+"""
 
 
 # ------------------------------------------------------------------ cached work
@@ -72,6 +112,10 @@ st.write("PubMed-Diabetes citation network - 19,717 papers. Damage the graph on 
 tab_damage, tab_paper, tab_results, tab_about = st.tabs(
     ["Damage the graph", "Look up a paper", "Experiment results", "How it works"])
 
+paper_details = None
+paper_ranks = None
+paper_features = None
+
 # ------------------------------------------------------------------ tab 1
 
 with tab_damage:
@@ -88,13 +132,14 @@ with tab_damage:
 
     st.subheader("How much did each ranking move?")
     st.caption("1.0 = the ranking did not change. Top-100 kept = share of the top-100 papers still in the top 100.")
-    summary = demo.method_summary(base, scores)
-    st.dataframe(summary.style.format("{:.3f}").background_gradient(cmap="RdYlGn", vmin=0.4, vmax=1.0),
+    damage_summary = demo.method_summary(base, scores)
+    st.dataframe(damage_summary.style.format("{:.3f}").background_gradient(cmap="RdYlGn", vmin=0.4, vmax=1.0),
                  width="stretch")
 
     st.subheader(f"Top 20 papers of: {demo.METHOD_LABELS[method]}")
     st.caption("moved > 0: the paper went up; moved < 0: it went down. label = diabetes type (not used by the model).")
-    st.dataframe(demo.rank_changes(base, scores, method, nodes, top=20), width="stretch")
+    top_papers = demo.rank_changes(base, scores, method, nodes, top=20)
+    st.dataframe(top_papers, width="stretch")
 
     st.subheader("Every paper - rank before vs rank after")
     before = ranking.to_ranking(base[method])
@@ -105,6 +150,7 @@ with tab_damage:
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("rank before"); ax.set_ylabel("rank after")
     ax.set_title(demo.METHOD_LABELS[method])
+    rank_plot_png = dashboard_report.figure_png(fig)
     st.pyplot(fig, width="content")
     st.caption("On the dashed line = did not move. Log scale, so the top of the ranking is on the left.")
 
@@ -120,22 +166,23 @@ with tab_paper:
     if paper not in g:
         st.warning("This ID is not in the dataset.")
     else:
-        st.markdown(f"**Paper {paper}** - label {nodes.set_index('paper_id').loc[paper, 'label']}; "
-                    f"cited by {g.in_degree(paper)} -> {damaged.in_degree(paper)} papers, "
-                    f"cites {g.out_degree(paper)} -> {damaged.out_degree(paper)} papers "
-                    f"(before -> after the damage)")
-        ranks = pd.DataFrame({
+        paper_details = (f"Paper {paper} - label {nodes.set_index('paper_id').loc[paper, 'label']}; "
+                         f"cited by {g.in_degree(paper)} -> {damaged.in_degree(paper)} papers, "
+                         f"cites {g.out_degree(paper)} -> {damaged.out_degree(paper)} papers "
+                         f"(before -> after the damage)")
+        st.markdown(f"**{paper_details}**")
+        paper_ranks = pd.DataFrame({
             "rank before": {demo.METHOD_LABELS[m]: ranking.to_ranking(base[m])[paper] for m in experiment.METHODS},
             "rank after": {demo.METHOD_LABELS[m]: ranking.to_ranking(scores[m])[paper] for m in experiment.METHODS},
         })
-        ranks["moved"] = ranks["rank before"] - ranks["rank after"]
+        paper_ranks["moved"] = paper_ranks["rank before"] - paper_ranks["rank after"]
         left, right = st.columns(2)
         left.write("Rank in every method (1 = most important)")
-        left.dataframe(ranks.style.format("{:,.0f}"), width="stretch")
+        left.dataframe(paper_ranks.style.format("{:,.0f}"), width="stretch")
         f_before, f_after = scaled_features(kind, level, int(seed))
         right.write("Scaled features - what the forest sees")
-        right.dataframe(pd.DataFrame({"before": f_before.loc[paper], "after": f_after.loc[paper]})
-                        .style.format("{:.4f}"), width="stretch")
+        paper_features = pd.DataFrame({"before": f_before.loc[paper], "after": f_after.loc[paper]})
+        right.dataframe(paper_features.style.format("{:.4f}"), width="stretch")
 
 # ------------------------------------------------------------------ tab 3
 
@@ -163,47 +210,70 @@ with tab_results:
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=4, fontsize=9, bbox_to_anchor=(0.5, -0.12))
     plt.tight_layout()
+    experiment_plot_png = dashboard_report.figure_png(fig)
     st.pyplot(fig, width="stretch")
     st.caption("Solid lines = the primary forest and leakage control; dashed = five centrality baselines. "
                "Predictive agreement with PageRank and robustness to damage are different questions.")
 
     core_path = tables / "core_summary.csv"
+    core_view = None
     if core_path.exists():
         st.subheader("Do the important papers stay important?")
         st.caption("Share of runs in which a top-10 % paper is still in the top 10 %.")
         core_table = pd.read_csv(core_path)
-        view = core_table.pivot_table(index="method", columns=["kind", "level"], values="important_stay_in_top")
-        view.index = [demo.METHOD_LABELS[m] for m in view.index]
-        st.dataframe(view.style.format("{:.2f}").background_gradient(cmap="RdYlGn", vmin=0.3, vmax=1.0),
+        core_view = core_table.pivot_table(index="method", columns=["kind", "level"], values="important_stay_in_top")
+        core_view.index = [demo.METHOD_LABELS[m] for m in core_view.index]
+        st.dataframe(core_view.style.format("{:.2f}").background_gradient(cmap="RdYlGn", vmin=0.3, vmax=1.0),
                      width="stretch")
 
     summary_file = config.DOCS_DIR / "results_summary.md"
+    results_summary = "Results summary is not available."
     if summary_file.exists():
+        results_summary = summary_file.read_text(encoding="utf-8")
         with st.expander("Research questions and hypotheses - full write-up"):
-            st.markdown(summary_file.read_text(encoding="utf-8"))
+            st.markdown(results_summary)
+
+    report_html = dashboard_report.build_dashboard_html(
+        settings={
+            "damage_type": demo.KIND_LABELS[kind],
+            "level": level,
+            "seed": int(seed),
+        },
+        graph_change=change,
+        out_of_range=out_of_range,
+        damage_summary=damage_summary,
+        top_papers=top_papers,
+        rank_plot_png=rank_plot_png,
+        method_label=demo.METHOD_LABELS[method],
+        paper_id=paper,
+        paper_details=paper_details,
+        paper_ranks=paper_ranks,
+        paper_features=paper_features,
+        experiment_metric=metrics[metric],
+        experiment_plot_png=experiment_plot_png,
+        core_table=core_view,
+        results_summary=results_summary,
+        about_text=ABOUT_TEXT,
+    )
+    st.sidebar.divider()
+    st.sidebar.markdown("### 📥 Export this dashboard")
+    st.sidebar.caption("Includes all four sections, the current paper lookup, tables, and embedded charts.")
+    st.sidebar.download_button(
+        "Download complete HTML report",
+        data=report_html,
+        file_name="citation_network_dashboard.html",
+        mime="text/html",
+        help="A self-contained report with all four tabs and embedded images. Upload it to Google "
+             "Drive, open it in a browser, or use its Print / Save as PDF button.",
+        type="primary",
+        icon=":material/download:",
+        width="stretch",
+        on_click="ignore",
+    )
 
 # ------------------------------------------------------------------ tab 4
 
 with tab_about:
-    st.markdown("""
-**Question.** Does a Random Forest that combines several centrality measures rank papers more
-stably than any single measure when the citation data is incomplete or noisy?
-
-**Pipeline** (every step is a module in `src/`):
-1. **Clean graph** - 19,717 papers, 44,324 citations, no self-loops, no cycles.
-2. **Features** - degree, betweenness, closeness, PageRank, k-core for every paper.
-3. **Frozen scaler** - Min-Max fitted once on the original graph and never refitted.
-4. **Random Forest** - the primary model predicts PageRank from the other four measures. A leakage
-   control also receives PageRank itself and therefore mostly copies its target.
-5. **Damage** - remove or add a share of the citations; the papers stay the same.
-6. **Re-score** - recompute the features on the damaged graph, use the same scaler and the same trained forest.
-7. **Compare** - Spearman / Kendall between rankings, how much of the top survives, per-paper variation.
-
-**Main finding.** The primary forest is more stable than PageRank when citations are *added*, especially
-at the top, but a little less stable when citations are *removed*. It is not the most robust method:
-simple local measures (degree, k-core) are more stable overall. Agreement with its PageRank target does
-not establish an independent or true notion of importance. Details are in the *Experiment results* tab.
-
-Braude College of Engineering - Final project, Phase B. Niran Czuckermann and Shahar Bar.
-Advisor: Dr. Dvora Toledano-Kitai.
-""")
+    st.markdown(ABOUT_TEXT)
+    st.markdown("Braude College of Engineering - Final project, Phase B. "
+                "Niran Czuckermann and Shahar Bar.  \nAdvisor: Dr. Dvora Toledano-Kitai.")

@@ -131,6 +131,8 @@ Type a PubMed ID (the tab suggests a few papers that fell the most). You see the
 
 The results of the full experiment (270 damaged networks), not of the single damage on the left. Choose a measure to see it for all methods and all damage levels. The full written conclusions are in the expandable section at the bottom.
 
+Use the prominent **Export this dashboard** button at the bottom of the sidebar to save all four tabs as one self-contained, printable HTML report. The current charts are embedded in the file, so it can be uploaded to Google Drive, opened without the app, or printed to PDF from a browser. The report reflects the current sidebar settings and paper lookup.
+
 ### Tab "How it works"
 
 A one-screen summary of the pipeline.
